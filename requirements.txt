@@ -1,0 +1,16 @@
+matplotlib==3.8.2
+openai==0.27.8
+pandas==2.0.3
+python-dotenv==1.0.0
+tiktoken==0.7.0
+torch==2.0.1
+tqdm==4.65.0
+transformers==4.31.0
+accelerate==0.21.0
+einops==0.6.1
+codegeex==1.0
+openpyxl==3.1.2
+mypy==1.10.0
+pylint==3.2.3
+huggingface-hub==0.13.4
+datasets==2.11.0
