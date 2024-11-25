@@ -16,12 +16,19 @@ bash quality_analysis.sh <path-to-target-codebase> <output_directory> <ORG_NAME>
 The structure of the target codebase needs to be as follows:
 ```
 codebase
--<dataset>
---<Src_Lang>
----Target_Lang
-----<files>
+--codenet <dataset>
+----Python <Src_Lang>
+------Java <Target_Lang>
+--------XYZ.java <files>
+--------...
+------C++
+------...
+----Java
+----...
+--avatar
+--...
 ```
-After running this command, the JSON files containing the assessment will be stored in output_directory.
+After running this command, the JSON files containing the assessment will be stored in the output directory.
 Due to API latency, some files can be missed from the sonarcloud. the missing files can be downloaded by following
 ```
 cd quality
