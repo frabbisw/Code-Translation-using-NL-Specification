@@ -1,5 +1,9 @@
 #!/bin/bash
 
+DATA_PATH=$1
+OUT_PATH=$2
+ORG_NAME=$3
+
 current_dir=$(pwd)
 
 declare -A lang_map
@@ -118,6 +122,4 @@ run_all() {
   echo "$root Total directories: $cnt"
 }
 
-run_all <data_path> "outputs/repair_src_nl" "after-src-nl"
-run_all <data_path> "outputs/nl_only" "before-nl-only"
-run_all <data_path> "outputs/src_nl" "before-src-nl"
+run_all $DATA_PATH $OUT_PATH $ORG_NAME
