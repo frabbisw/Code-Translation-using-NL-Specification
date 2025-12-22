@@ -51,7 +51,8 @@ dataset
 ## Evaluating Translations
 
 ```
-./evaluate_translation.sh 
+python translation_evaluation.py --dataset dataset_name --source_lang src_lang --target_lang tgt_lang --trans_dir directory_containing_translated_file --rep_dir directory_where_to_save_the_reports
+# python translation_evaluation.py --dataset codenetintertrans --source_lang C++ --target_lang C --trans_dir ./Generations/translation_nl/codenetintertrans/C++/C --rep_dir ./Generations/translation_nl/Reports/codenetintertrans/C++/C
 ```
 
 ## Repairing Errors
