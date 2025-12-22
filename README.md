@@ -61,18 +61,6 @@ python3 repair_all_errors.py translation_directory report_directory output_direc
 # ./repair_all_errors.sh ./Generations/translation_nl ./Generations/translation_nl/codenetintertrans/Reports  ./Generations/Repair_nl "gpt-4o-mini"
 ```
 
-# Process of evaluation task handling Avatar and Codenet Dataset
-
-We built an intellije project with Maven, containing Surefire to generate unit tests report. After generating the reports file by file we run the command to generate the overall report:
-```
-python3 translation_evaluation_evalplus.py --source_lang "Python" --target_lang "Java" --report_dir "<directory to save report file>" --attempt 1
-```
-
-
-
-N.B: In some python scripts, you need to specify translation_dir variable to point the directory having the codes you want to evaluate.
-
-
 ## Run Quality Analysis
 We have used SonarQube to assess the quality analysis of the generated code. To run it, we created organizations in [sonarcloud](https://sonarcloud.io/) for each set(translated with/without NL-Specs and before/after fixing the compilation errors). An API key from sonarcloud needs to be fetched and saved to $SONAR_TOKEN
 
