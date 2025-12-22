@@ -30,31 +30,36 @@ dataset
 ## Generating NL Spec
 
 ```
-./generate_nlspec.sh
+./generate_pseudocode.sh model model_dir
+# ./generate_pseudocode.sh "gpt-4o-mini"
 ```
 ## Generating Translations using NL spec 
 
 ```
-./generate_translations.sh
+./generate_translations_nl.sh model model_dir
+# ./generate_translations_nl.sh "gpt-4o-mini"
 ```
 ## Generating Translations using source + NL spec
 
 ```
-./generate_translation_using_source_code.sh
+./generate_translation_nl_sc.sh model model_dir
+# ./generate_translations_nl.sh "gpt-4o-mini"
 ```
 
 # Process of evaluation task handling Avatar and Codenet Dataset
 
-## Evaluating Translations generated using NL spec
+## Evaluating Translations
 
 ```
-./evaluate_translation.sh translation_evaluation.py
+./evaluate_translation.sh 
 ```
-## Evaluating Translations generated using source + NL spec
 
+## Repairing Errors
 ```
-./evaluate_translation.sh translation_evaluation_using_source_code.py
+python3 repair_all_errors.py translation_directory report_directory output_directory model model_directory
+# ./repair_all_errors.sh ./Generations/translation_nl ./Generations/translation_nl/codenetintertrans/Reports  ./Generations/Repair_nl "gpt-4o-mini"
 ```
+
 # Process of evaluation task handling Avatar and Codenet Dataset
 
 We built an intellije project with Maven, containing Surefire to generate unit tests report. After generating the reports file by file we run the command to generate the overall report:
@@ -62,10 +67,7 @@ We built an intellije project with Maven, containing Surefire to generate unit t
 python3 translation_evaluation_evalplus.py --source_lang "Python" --target_lang "Java" --report_dir "<directory to save report file>" --attempt 1
 ```
 
-## Repairing Compilation Errors
-```
-python3 translation_evaluation_evalplus.py --source_lang "Python" --target_lang "Java" --report_dir "<directory to save report file>" --attempt 1
-```
+
 
 N.B: In some python scripts, you need to specify translation_dir variable to point the directory having the codes you want to evaluate.
 

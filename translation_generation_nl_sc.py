@@ -6,9 +6,10 @@ import tiktoken
 from dotenv import load_dotenv
 import argparse
 import re
+from local_model import LocalCausalLMRunner
 
 os.makedirs(f'logs', exist_ok=True)
-logging.basicConfig(filename=f"logs/translation_generation.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(filename=f"logs/translation_generation_with_nl_source.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def send_message_to_openai(message_log):
@@ -50,11 +51,17 @@ def send_message_to_openai(message_log):
     # If no response with text is found, return the first response's content (which may be empty)
     return response.choices[0].message.content
 
-def generate_translation_from_pseudocode(content, to):
+def generate_translation_from_pseudocode(content, to, model):
     message = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": content}]
-    response = send_message_to_openai(message)
+    
+    if isinstance(model, str) and "gpt" in model:
+        print(f"model {model} is selected. fetching response using api ...")
+        response = send_message_to_openai(message)
+    elif isinstance(model, LocalCausalLMRunner):
+        print(f"model {model.model_name} is selected. running locally ...")
+        response = model.run(message)
     return response.replace("cpp\n", "").replace(f"```{to.lower()}", "").replace("```", "")
 
 
@@ -65,6 +72,8 @@ if __name__ == "__main__":
     parser.add_argument('--source_lang', help='source language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
     parser.add_argument('--target_lang', help='target language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
     parser.add_argument('--filename', help='path to source code', required=True, type=str)
+    parser.add_argument('--model', help='model to use for code translation.', required=True, type=str)
+    parser.add_argument('--models_dir', help='directory where the models are kept.', required = True, type=str)
     args = parser.parse_args()
 
     source = args.source_lang
@@ -101,21 +110,27 @@ if __name__ == "__main__":
 
     
     skip = False
-    target_file = f"Generations/translation/{dataset}/{source}/{target}/{file_basename}.{file_ext}"
+    target_file = f"Generations/translation_nl_and_source/{dataset}/{source}/{target}/{file_basename}.{file_ext}"
     if os.path.exists(target_file):
         skip = True
 
     if not skip:
-        message = f"{pseudocode_content}\n\nThe above pseudocode was generated from {source}. Generate functionally correct and similar {target} code using the pseudocode. Print only the {target} code and end with the comment \"End of Code\". Do not give any other explanation."
+        message = f"{content}\n\nThis is a {source} code.\n\n{pseudocode_content}\n\nThe above pseudocode was generated from the {source} code given above. Generate functionally correct and similar {target} code using the pseudocode. Print only the {target} code and end with the comment \"End of Code\". Do not give any other explanation."
 
-        target_response = generate_translation_from_pseudocode(message, target)
+        model = args.model
+        model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b"}
+        if model in ["starcoder2", "magicoder"]:
+            models_dir = args.models_dir
+            model = LocalCausalLMRunner(f"{models_dir}/{model_map[model]}")
+
+        target_response = generate_translation_from_pseudocode(message, target, model)
 
         if dataset == "evalplus":
             target_response = "package com.example;\n" + target_response
 
         target_response = re.sub('public\s*class\s*.+', 'public class ' + file_basename + ' {', target_response)
 
-        target_file_dir = f"Generations/translation/{dataset}/{source}/{target}"
+        target_file_dir = f"Generations/translation_nl_and_source/{dataset}/{source}/{target}"
         os.makedirs(target_file_dir, exist_ok=True)
 
         with open(target_file, "w") as target_fp:

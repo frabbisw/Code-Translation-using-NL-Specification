@@ -162,6 +162,7 @@ cython_debug/
 # ignoring big directories
 dataset/
 dataset (copy)/
+Generations/
 CodeGeeX/
 huggingface/
 test_cases_original/

@@ -5,15 +5,16 @@ import logging
 import tiktoken
 from dotenv import load_dotenv
 import argparse
+import re
 from local_model import LocalCausalLMRunner
 
 os.makedirs(f'logs', exist_ok=True)
-logging.basicConfig(filename=f"logs/pseudocode_generation.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(filename=f"logs/translation_generation_source.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def send_message_to_openai(message_log):
     "Use OpenAI's ChatCompletion API to get the chatbot's response"
-    encoding = tiktoken.encoding_for_model("gpt-4")
+    encoding = tiktoken.encoding_for_model("gpt-4o-mini")
     num_tokens = len(encoding.encode(message_log[1]["content"]))
 
     response = "exceptional case"
@@ -50,83 +51,87 @@ def send_message_to_openai(message_log):
     # If no response with text is found, return the first response's content (which may be empty)
     return response.choices[0].message.content
 
-def generate_translation_from_pseudocode(content, to):
+def generate_translation_from_source(content, to, model):
     message = [
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": content}]
-    response = send_message_to_openai(message)
-    return response.replace("cpp\n", "").replace(f"```{to.lower()}", "").replace("```", "")
 
-def generate_pseudocode_from_source(content, source, model):
-    message = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": content}]
     if isinstance(model, str) and "gpt" in model:
         print(f"model {model} is selected. fetching response using api ...")
-        response = send_message_to_openai(message).replace("```", "")
+        response = send_message_to_openai(message)
     elif isinstance(model, LocalCausalLMRunner):
         print(f"model {model.model_name} is selected. running locally ...")
         response = model.run(message)
-    return response
+    return response.replace("cpp\n", "").replace(f"```{to.lower()}", "").replace("```", "")
+
 
 if __name__ == "__main__":
     load_dotenv()
-    parser = argparse.ArgumentParser(description='run pseudocode generation with a given model, dataset and languages')
-    parser.add_argument('--dataset', help='dataset to use for pseudocode generation. should be one of [codenet,avatar]', required=True, type=str)
+    parser = argparse.ArgumentParser(description='run translation with GPT-4 with a given dataset and languages')
+    parser.add_argument('--dataset', help='dataset to use for code translation. should be one of [codenet,avatar]', required=True, type=str)
     parser.add_argument('--source_lang', help='source language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
+    parser.add_argument('--target_lang', help='target language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
     parser.add_argument('--filename', help='path to source code', required=True, type=str)
     parser.add_argument('--model', help='model to use for code translation.', required=True, type=str)
     parser.add_argument('--models_dir', help='directory where the models are kept.', required = True, type=str)
-    
     args = parser.parse_args()
 
     source = args.source_lang
+    target = args.target_lang
     dataset = args.dataset
     filename = args.filename
+
+    if source == target:
+        exit()
+    
+    file_basename = filename.split(".")[0]
+    file_ext = "c"
+    if target == "Java":
+        file_ext = "java"
+    elif target == "Python":
+        file_ext = "py"
+    elif target == "Go":
+        file_ext = "go"
+    elif target == "C++":
+        file_ext = "cpp"
+    
     content_dir = f"dataset/{dataset}/{source}/Code/{filename}"
+    # pseudocode_dir = f"Generations/Pseudocodes/{dataset}/{source}/{file_basename}.txt"
     content =""
+    # pseudocode_content = ""
 
     with open(content_dir, "r") as content_file:
         content = content_file.read()
         content_file.close()
+    
+    # with open(pseudocode_dir, "r") as pseudocode_file:
+    #     pseudocode_content = pseudocode_file.read()
+    #     pseudocode_file.close()
 
+    
     skip = False
-    base_filename = filename.split(".")[0]
-    pseudocode_file = f"Generations/Pseudocodes/{dataset}/{source}/{base_filename}.txt"
-    if os.path.exists(pseudocode_file):
+    target_file = f"Generations/translation_source/{dataset}/{source}/{target}/{file_basename}.{file_ext}"
+    if os.path.exists(target_file):
         skip = True
 
     if not skip:
-        message = f"{content}\n\nGive pseudocode for the above {source} code so that the {source} code is reproducible from the pseudocode. Do not give any other explanation except the pseudocode."
+        message = f"{content}\n\nThis is a {source} code. Generate functionally correct and similar {target} code using the from the {source} code. Print only the {target} code and end with the comment \"End of Code\". Do not give any other explanation."
         
         model = args.model
         model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b"}
         if model in ["starcoder2", "magicoder"]:
             models_dir = args.models_dir
             model = LocalCausalLMRunner(f"{models_dir}/{model_map[model]}")
-        
-        pseudocode_response = generate_pseudocode_from_source(message, source, model)
+        target_response = generate_translation_from_source(message, target, model)
 
-        pseudocode_file_dir = f"Generations/Pseudocodes/{dataset}/{source}"
-        os.makedirs(pseudocode_file_dir, exist_ok=True)
+        if dataset == "evalplus":
+            target_response = "package com.example;\n" + target_response
 
-        with open(pseudocode_file, "w") as pseudocode_fp:
-            pseudocode_fp.write(pseudocode_response)
-            pseudocode_fp.close()
+        target_response = re.sub('public\s*class\s*.+', 'public class ' + file_basename + ' {', target_response)
 
-    # skip = False
-    # src_regen_file = f"Generations/source_regeneration/{dataset}/{source}/{filename}"
-    # if os.path.exists(src_regen_file):
-    #     skip = True
+        target_file_dir = f"Generations/translation_source/{dataset}/{source}/{target}"
+        os.makedirs(target_file_dir, exist_ok=True)
 
-    # if not skip:
-    #     message = f"{pseudocode_response}\n\nThe above pseudocode was generated from {source}. Regenerate the {source} code from the pseudocode. Print only the {source} code and end with the comment \"End of Code\". Do not give any other explanation."
-
-    #     source_response = generate_translation_from_pseudocode(message, source)
-
-    #     src_regen_file_dir = f"Generations/source_regeneration/{dataset}/{source}"
-    #     os.makedirs(src_regen_file_dir, exist_ok=True)
-
-    #     with open(src_regen_file, "w") as source_regen_fp:
-    #         source_regen_fp.write(source_response)
-    #         source_regen_fp.close()
+        with open(target_file, "w") as target_fp:
+            target_fp.write(target_response)
+            target_fp.close()
