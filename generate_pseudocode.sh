@@ -12,6 +12,8 @@ models=("gpt-4o-mini")
 
 model=$1
 model_dir=$2
+src_dataset=$3
+src_lang=$4
 
 # Declare an associative array
 declare -A languages
@@ -53,11 +55,9 @@ pseudocode_generation() {
 # done
 
 # Translate for codenet(InterTrans) dataset
-for source_lang in "${source_languages_codenet_intertrans[@]}"; do
-  for file in dataset/codenetintertrans/$source_lang/Code/*.${languages[$source_lang]}; do
-    base_name=$(basename "$file" .${languages[$source_lang]}).${languages[$source_lang]}
-    pseudocode_generation "codenetintertrans" "$source_lang" "$base_name"
-  done
+for file in dataset/codenetintertrans/$src_lang/Code/*.${languages[$src_lang]}; do
+  base_name=$(basename "$file" .${languages[$src_lang]}).${languages[$src_lang]}
+  pseudocode_generation $src_dataset "$src_lang" "$base_name"
 done
 
 # # Translate for evalplus dataset
