@@ -55,7 +55,7 @@ pseudocode_generation() {
 # done
 
 # Translate for codenet(InterTrans) dataset
-for file in dataset/codenetintertrans/$src_lang/Code/*.${languages[$src_lang]}; do
+for file in dataset/$src_dataset/$src_lang/Code/*.${languages[$src_lang]}; do
   base_name=$(basename "$file" .${languages[$src_lang]}).${languages[$src_lang]}
   pseudocode_generation $src_dataset "$src_lang" "$base_name"
 done
