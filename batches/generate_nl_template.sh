@@ -16,6 +16,6 @@ module load cuda/12.3.2
 module load anaconda/3.2024.10.1
 
 eval "$(conda shell.bash hook)"
-conda activate code_trans
+conda activate nlspec
 cd ../
 bash generate_pseudocode.sh magicoder /home/f_rabbi/models ##DATASET## ##LANG##
