@@ -119,7 +119,7 @@ if __name__ == "__main__":
         
         model = args.model
         model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b"}
-        if model in ["starcoder2", "magicoder"]:
+        if model in ["starcoder", "magicoder"]:
             models_dir = args.models_dir
             model = LocalCausalLMRunner(f"{models_dir}/{model_map[model]}")
         target_response = generate_translation_from_source(message, target, model)
