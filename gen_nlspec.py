@@ -70,9 +70,6 @@ def generate_pseudocode_from_source(content, source, model):
     return response
 
 def run_by_file(dataset, source_lang, filename, model, models_dir)
-    if isinstance(model, str):
-        load_dotenv()
-    
     content_dir = f"dataset/{dataset}/{source}/Code/{filename}"
     content =""
 
