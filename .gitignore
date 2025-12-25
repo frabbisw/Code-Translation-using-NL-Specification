@@ -169,3 +169,5 @@ test_cases_original/
 translation/base_translation/gpt-4/
 translation/base_translation/gpt-4o-mini (copy)/
 *_report_from_*.json
+logs/
+Repair/
