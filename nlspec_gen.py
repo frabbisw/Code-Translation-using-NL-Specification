@@ -70,7 +70,7 @@ def generate_pseudocode_from_source(content, source, model):
         response = model.run(message)
     return response
 
-def run_by_file(dataset, source_lang, filename, model, models_dir):
+def run_by_file(dataset, source_lang, filename, model):
     content_dir = f"dataset/{dataset}/{source}/Code/{filename}"
     content =""
 
