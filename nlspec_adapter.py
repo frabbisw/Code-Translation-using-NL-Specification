@@ -50,7 +50,7 @@ def file_looper(model, model_dir, src_dataset, src_lang):
 if __name__ == "__main__":
     if len(sys.argv) != 5:
         print(
-            "Usage: python run_pseudocode_generation.py "
+            "Usage: python nlspec_adapter.py "
             "<model> <model_dir> <src_dataset> <src_lang>"
         )
         sys.exit(1)
