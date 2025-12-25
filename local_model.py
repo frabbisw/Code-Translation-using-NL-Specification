@@ -77,12 +77,4 @@ class LocalCausalLMRunner:
         # Decode response
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True).split("@@ Model's Response\n")[-1]
         response = self.extract_code(response)
-        print("Prompt")
-        print("-"*50)
-        print(prompt)
-        print("-"*50)
-        print("Response")
-        print("-"*50)
-        print(response)
-        print("="*50)
         return response
