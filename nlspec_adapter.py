@@ -21,7 +21,7 @@ def pseudocode_generation(dataset, source_lang, filename, model, model_dir):
         f"Generating Pseudocode of {source_lang} "
         f"in dataset {dataset} using model {model}..."
     )
-    run_by_file(dataset, source_lang, filename, model, model_dir)
+    run_by_file(dataset, source_lang, filename, model)
 
 
 def file_looper(model, model_dir, src_dataset, src_lang):
