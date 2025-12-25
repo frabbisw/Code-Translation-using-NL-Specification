@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J generate_nl_spec_##DATASET##_##LANG##
+#SBATCH -J generate_##DATASET##_##LANG##
 #SBATCH -n4
 #SBATCH --mem=30GB
 #SBATCH --gpus=1
