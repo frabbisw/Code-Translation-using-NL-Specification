@@ -1,6 +1,4 @@
 import os
-import openai
-from openai import OpenAI
 import logging
 import tiktoken
 from dotenv import load_dotenv
@@ -15,51 +13,6 @@ import Constants
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/translation_evaluation_repair.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
-def send_message_to_openai(message_log):
-    "Use OpenAI's ChatCompletion API to get the chatbot's response"
-    encoding = tiktoken.encoding_for_model("gpt-4o-mini")
-    num_tokens = len(encoding.encode(message_log[1]["content"]))
-
-    response = "exceptional case"
-    is_success = False
-    max_attempts = 5
-    client = OpenAI()
-    while max_attempts > 0:
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",  # The name of the OpenAI chatbot model to use
-                # The conversation history up to this point, as a list of dictionaries
-                messages=message_log,
-                # The maximum number of tokens (words or subwords) in the generated response
-                max_tokens=max(1, 8000-num_tokens),
-                # The "creativity" of the generated response (higher temperature = more creative)
-                temperature=0.7,
-            )
-            is_success = True
-            break
-        except openai.error.InvalidRequestError as e:
-            return "# Token size exceeded."
-        except:
-            max_attempts -= 1
-            continue
-
-    if not is_success:
-        return response
-
-    # Find the first response from the chatbot that has text in it (some responses may not have text)
-    for choice in response.choices:
-        if "text" in choice:
-            return choice.text
-
-    # If no response with text is found, return the first response's content (which may be empty)
-    return response.choices[0].message.content
-
-def repair_code(content, to):
-    message = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": content}]
-    response = send_message_to_openai(message)
-    return response.replace("cpp\n", "").replace(f"```{to.lower()}", "").replace("```", "")
 
 def remove_unnecessary_files(current_code_dir):
     #remove all .class and output files generated
@@ -438,53 +391,38 @@ def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, targ
     # elif dataset == "evalplus":
     #     test_codenet(source, target, report_dir, translation_dir, test_dir)
 
-if __name__ == "__main__":
-    load_dotenv()
-    parser = argparse.ArgumentParser(description='run translation with GPT-4 with a given dataset and languages')
-    parser.add_argument('--dataset', help='dataset to use for code translation. should be one of [codenet,avatar]', required=True, type=str)
-    parser.add_argument('--source_lang', help='source language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
-    parser.add_argument('--target_lang', help='target language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
-    parser.add_argument('--trans_dir', help='translated code directory that needs to be evaluated', required=True, type=str)
-    parser.add_argument('--rep_dir', help='directory to save report for the translated codes under evaluation', required=True, type=str)
-    
-    # parser.add_argument('--filename', help='path to source code', required=True, type=str)
-    args = parser.parse_args()
-
-    source = args.source_lang
-    target = args.target_lang
-    dataset = args.dataset
-
-    if source == target:
-        exit()
-    # filename = args.filename
-    
-    # file_basename = filename.split(".")[0]
-    # file_ext = "c"
-    # if target == "Java":
-    #     file_ext = "java"
-    # elif target == "Python":
-    #     file_ext = "py"
-    # elif target == "Go":
-    #     file_ext = "go"
-    # elif target == "C++":
-    #     file_ext = "cpp"
-
-    translated_code_dir = args.trans_dir # f"repair/combine_debug_results/{dataset}/{source}/{target}"
+def translation_evaluation(dataset, source, target, translated_code_dir, report_dir):
     test_dir = f"dataset/{dataset}/{source}/TestCases"
-    report_dir = args.rep_dir # f"repair/combine_debug_results/Reports/{dataset}/{source}/{target}"
-
-    # translated_code_dir = f"LIT_Results/{dataset}/{source}/{target}"
-    # report_dir = f"LIT_Results/Reports/{dataset}/{source}/{target}"
-
     os.makedirs(report_dir, exist_ok=True)
-
     evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target)
 
-    # test_files = [f for f in os.listdir(test_dir) if os.path.isfile(os.path.join(test_dir, f))]
-    # corresponding_tests = [f for f in test_files if file_basename in f and ".in" in f]
+# if __name__ == "__main__":
+#     load_dotenv()
+#     parser = argparse.ArgumentParser(description='run translation with GPT-4 with a given dataset and languages')
+#     parser.add_argument('--dataset', help='dataset to use for code translation. should be one of [codenet,avatar]', required=True, type=str)
+#     parser.add_argument('--source_lang', help='source language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
+#     parser.add_argument('--target_lang', help='target language to use for code translation. should be one of [Python,Java,C,C++,Go]', required=True, type=str)
+#     parser.add_argument('--trans_dir', help='translated code directory that needs to be evaluated', required=True, type=str)
+#     parser.add_argument('--rep_dir', help='directory to save report for the translated codes under evaluation', required=True, type=str)
+#     args = parser.parse_args()
 
-    # for i in range(len(corresponding_tests)):
-    #     pass
+#     source = args.source_lang
+#     target = args.target_lang
+#     dataset = args.dataset
+
+#     if source == target:
+#         exit()
+
+#     translated_code_dir = args.trans_dir # f"repair/combine_debug_results/{dataset}/{source}/{target}"
+#     test_dir = f"dataset/{dataset}/{source}/TestCases"
+#     report_dir = args.rep_dir # f"repair/combine_debug_results/Reports/{dataset}/{source}/{target}"
+
+#     # translated_code_dir = f"LIT_Results/{dataset}/{source}/{target}"
+#     # report_dir = f"LIT_Results/Reports/{dataset}/{source}/{target}"
+
+#     os.makedirs(report_dir, exist_ok=True)
+
+#     evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target)
 
 
 

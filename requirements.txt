@@ -1,5 +1,5 @@
 matplotlib==3.8.2
-openai==0.27.8
+openai==1.82.0
 pandas==2.0.3
 python-dotenv==1.0.0
 tiktoken==0.7.0
@@ -12,7 +12,7 @@ codegeex==1.0
 openpyxl==3.1.2
 mypy==1.10.0
 pylint==3.2.3
-huggingface-hub==0.13.4
+huggingface-hub
 datasets==2.11.0
 
 _libgcc_mutex=0.1=main

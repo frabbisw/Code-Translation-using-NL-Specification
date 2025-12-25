@@ -27,39 +27,12 @@ dataset
 └─ ...
 ```
 
-## Generating NL Spec
-
+## Run Pipeline For Avatar, CodeNet and CodenetIntertrans
 ```
-./generate_pseudocode.sh model model_dir
-# ./generate_pseudocode.sh "gpt-4o-mini"
-```
-## Generating Translations using NL spec 
-
-```
-./generate_translations_nl.sh model model_dir
-# ./generate_translations_nl.sh "gpt-4o-mini"
-```
-## Generating Translations using source + NL spec
-
-```
-./generate_translation_nl_sc.sh model model_dir
-# ./generate_translations_nl.sh "gpt-4o-mini"
+python pipeline_avatar_codenet.py  --dataset dataset --source_lang source --target_lang target --model model --models_dir models_dir
+# model and models_dir are optional, default model is gpt-4o-mini
 ```
 
-# Process of evaluation task handling Avatar and Codenet Dataset
-
-## Evaluating Translations
-
-```
-python translation_evaluation.py --dataset dataset_name --source_lang src_lang --target_lang tgt_lang --trans_dir directory_containing_translated_file --rep_dir directory_where_to_save_the_reports
-# python translation_evaluation.py --dataset codenetintertrans --source_lang C++ --target_lang C --trans_dir ./Generations/translation_nl/codenetintertrans/C++/C --rep_dir ./Generations/translation_nl/Reports/codenetintertrans/C++/C
-```
-
-## Repairing Errors
-```
-python3 repair_all_errors.py translation_directory report_directory output_directory model model_directory
-# ./repair_all_errors.sh ./Generations/translation_nl ./Generations/translation_nl/codenetintertrans/Reports  ./Generations/Repair_nl "gpt-4o-mini"
-```
 
 ## Run Quality Analysis
 We have used SonarQube to assess the quality analysis of the generated code. To run it, we created organizations in [sonarcloud](https://sonarcloud.io/) for each set(translated with/without NL-Specs and before/after fixing the compilation errors). An API key from sonarcloud needs to be fetched and saved to $SONAR_TOKEN
