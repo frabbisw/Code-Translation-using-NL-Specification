@@ -6,6 +6,7 @@ import logging
 import tiktoken
 from dotenv import load_dotenv
 import sys
+from local_model import LocalCausalLMRunner
 
 LANGUAGES = {
     "Python": "py",
