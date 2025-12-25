@@ -16,12 +16,12 @@ LANGUAGES = {
     "Go": "go",
 }
 
-def pseudocode_generation(dataset, source_lang, filename, model, models_dir):
+def pseudocode_generation(dataset, source_lang, filename, model, model_dir):
     print(
         f"Generating Pseudocode of {source_lang} "
         f"in dataset {dataset} using model {model}..."
     )
-    run_by_file(dataset, source_lang, filename, model, models_dir)
+    run_by_file(dataset, source_lang, filename, model, model_dir)
 
 
 def file_looper(model, model_dir, src_dataset, src_lang):
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b"}
     if model in ["starcoder", "magicoder"]:
-        model = LocalCausalLMRunner(f"{models_dir}/{model_map[model]}")
+        model = LocalCausalLMRunner(f"{model_dir}/{model_map[model]}")
     else:
         load_dotenv()
     
