@@ -1,5 +1,5 @@
 import os
-from pseudocode_generation import run_by_file
+from nlspec_gen import run_by_file
 import openai
 from openai import OpenAI
 import logging
