@@ -88,7 +88,6 @@ def run_by_file(dataset, source_lang, filename, model):
         message = f"{content}\n\nGive pseudocode for the above {source_lang} code so that the {source_lang} code is reproducible from the pseudocode. Do not give any other explanation except the pseudocode."
                 
         pseudocode_response = generate_pseudocode_from_source(message, source_lang, model)
-        pdb.set_trace()
         
         pseudocode_file_dir = f"Generations/Pseudocodes/{dataset}/{source_lang}"
         os.makedirs(pseudocode_file_dir, exist_ok=True)
