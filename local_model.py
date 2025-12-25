@@ -16,7 +16,7 @@ class LocalCausalLMRunner:
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_path,
             device_map="auto",
-            torch_dtype=torch.bfloat16
+            dtype=torch.bfloat16
         )
 
         print(f"Allocated: {torch.cuda.memory_allocated(0) / 1024**2:.2f} MB")
@@ -77,12 +77,4 @@ class LocalCausalLMRunner:
         # Decode response
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True).split("@@ Model's Response\n")[-1]
         response = self.extract_code(response)
-        print("Prompt")
-        print("-"*50)
-        print(prompt)
-        print("-"*50)
-        print("Response")
-        print("-"*50)
-        print(response)
-        print("="*50)
         return response
