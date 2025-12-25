@@ -3,25 +3,27 @@
 set -euo pipefail
 
 TEMPLATE_FILE="generate_nl_template.sh"
+MODEL="magicoder"
 
 datasets=("avatar" "codenet" "codenetintertrans")
 
+target_languages=("C++" "C" "Java" "Go" "Python")
+
 source_languages_avatar=("Java" "Python")
 source_languages_codenet=("C" "C++" "Go" "Python" "Java")
-source_languages_evalplus=("Python")
 source_languages_codenetintertrans=("C++" "Go" "Python" "Java")
 
 for dataset in "${datasets[@]}"; do
-    # Select the correct language array based on dataset
+    # Select source languages based on dataset
     case "$dataset" in
         avatar)
-            langs=("${source_languages_avatar[@]}")
+            source_languages=("${source_languages_avatar[@]}")
             ;;
         codenet)
-            langs=("${source_languages_codenet[@]}")
+            source_languages=("${source_languages_codenet[@]}")
             ;;
         codenetintertrans)
-            langs=("${source_languages_codenetintertrans[@]}")
+            source_languages=("${source_languages_codenetintertrans[@]}")
             ;;
         *)
             echo "Unknown dataset: $dataset"
@@ -29,15 +31,23 @@ for dataset in "${datasets[@]}"; do
             ;;
     esac
 
-    for lang in "${langs[@]}"; do
-        output_file="generate_nl_spec_${dataset}_${lang}.sh"
+    for src_lang in "${source_languages[@]}"; do
+        for tgt_lang in "${target_languages[@]}"; do
+            # Skip same-language pairs
+            if [[ "$src_lang" == "$tgt_lang" ]]; then
+                continue
+            fi
 
-        sed \
-            -e "s/##DATASET##/${dataset}/g" \
-            -e "s/##LANG##/${lang}/g" \
-            "$TEMPLATE_FILE" > "$output_file"
+            output_file="generate_nl_${dataset}_${src_lang}_${tgt_lang}.sh"
 
-        chmod +x "$output_file"
-        echo "Generated: $output_file"
+            sed \
+                -e "s/##DATASET##/${dataset}/g" \
+                -e "s/##SRC_LANG##/${src_lang}/g" \
+                -e "s/##TGT_LANG##/${tgt_lang}/g" \
+                -e "s/##MODEL##/${MODEL}/g" \
+                "$TEMPLATE_FILE" > "$output_file"
+
+            chmod +x "$output_file"
+        done
     done
 done
