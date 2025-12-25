@@ -18,4 +18,4 @@ module load anaconda/3.2024.10.1
 eval "$(conda shell.bash hook)"
 conda activate nlspec
 cd ../
-bash nlspec_adapter.py magicoder /home/f_rabbi/models ##DATASET## ##LANG##
+python nlspec_adapter.py magicoder /home/f_rabbi/models ##DATASET## ##LANG##
