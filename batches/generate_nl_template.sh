@@ -18,4 +18,6 @@ module load anaconda/3.2024.10.1
 eval "$(conda shell.bash hook)"
 conda activate code_trans
 cd ../
-python nlspec_adapter.py magicoder /home/f_rabbi/models ##DATASET## ##LANG##
+# python nlspec_adapter.py magicoder /home/f_rabbi/models ##DATASET## ##LANG##
+python pipeline_avatar_codenet.py  --dataset ##DATASET## --source_lang ##SRC_LANG## --target_lang ##TGT_LANG## --model ##MODEL## --models_dir /home/f_rabbi/models
+
