@@ -3,6 +3,17 @@ from subprocess import Popen, PIPE
 import signal
 import os
 import Constants
+import re
+
+def compare_outputs(stdout: str, f_out: str, precision: int = 3) -> bool:
+    def parse_and_round(s):
+        tokens = re.split(r'(\s+)', s)  # Split while keeping whitespace
+        return [
+            round(float(token), precision) if re.fullmatch(r"-?\d+\.\d+", token) else token
+            for token in tokens
+        ]
+
+    return parse_and_round(stdout) == parse_and_round(f_out)
 
 def _test_java(java_code_file_dir, java_file_name, input_content, output_content):
     try:
@@ -47,8 +58,10 @@ def _test_java(java_code_file_dir, java_file_name, input_content, output_content
     if(stdout.strip()==f_out.strip()):
         return Constants.TEST_PASSED, "", {}
     else:
-        if stderr_data.decode()=='':
-            return Constants.TEST_MISMATCH, f"Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
+        if compare_outputs(stdout.strip(), f_out.strip()):
+            return Constants.TEST_PASSED, "", {}
+        elif stderr_data.decode()=='':
+            return Constants.TEST_MISMATCH, f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
         else:
             return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}", {"Error_Type": str(stderr_data.decode())}
         
@@ -95,8 +108,10 @@ def _test_python(python_code_file_dir, python_file_name, input_content, output_c
     if(stdout.strip()==f_out.strip()):
         return Constants.TEST_PASSED, "", {}
     else:
-        if stderr_data.decode()=='':
-            return Constants.TEST_MISMATCH, f"Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
+        if compare_outputs(stdout.strip(), f_out.strip()):
+            return Constants.TEST_PASSED, "", {}
+        elif stderr_data.decode()=='':
+            return Constants.TEST_MISMATCH, f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
         else:
             return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}", {"Error_Type": str(stderr_data.decode())}
         
@@ -143,8 +158,10 @@ def _test_c(c_code_file_dir, c_file_name, input_content, output_content):
     if(stdout.strip()==f_out.strip()):
         return Constants.TEST_PASSED, "", {}
     else:
-        if stderr_data.decode()=='':
-            return Constants.TEST_MISMATCH, f"Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
+        if compare_outputs(stdout.strip(), f_out.strip()):
+            return Constants.TEST_PASSED, "", {}
+        elif stderr_data.decode()=='':
+            return Constants.TEST_MISMATCH, f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
         else:
             return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}", {"Error_Type": str(stderr_data.decode())}
         
@@ -191,8 +208,10 @@ def _test_cpp(cpp_code_file_dir, cpp_file_name, input_content, output_content):
     if(stdout.strip()==f_out.strip()):
         return Constants.TEST_PASSED, "", {}
     else:
-        if stderr_data.decode()=='':
-            return Constants.TEST_MISMATCH, f"Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
+        if compare_outputs(stdout.strip(), f_out.strip()):
+            return Constants.TEST_PASSED, "", {}
+        elif stderr_data.decode()=='':
+            return Constants.TEST_MISMATCH, f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
         else:
             return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}", {"Error_Type": str(stderr_data.decode())}
         
@@ -239,8 +258,10 @@ def _test_go(go_code_file_dir, go_file_name, input_content, output_content):
     if(stdout.strip()==f_out.strip()):
         return Constants.TEST_PASSED, "", {}
     else:
-        if stderr_data.decode()=='':
-            return Constants.TEST_MISMATCH, f"Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
+        if compare_outputs(stdout.strip(), f_out.strip()):
+            return Constants.TEST_PASSED, "", {}
+        elif stderr_data.decode()=='':
+            return Constants.TEST_MISMATCH, f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
         else:
             return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}", {"Error_Type": str(stderr_data.decode())}
 

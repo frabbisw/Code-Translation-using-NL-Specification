@@ -5,6 +5,7 @@ import re
 from local_model import LocalCausalLMRunner
 import json
 import OpenAICall
+import time
 
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/debugger.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -28,9 +29,6 @@ class Debug:
         self.main_dir = os.getcwd()
         # example out_dir = "repair_nl_and_source/debug_on_translated_codes_itr4"
         self.output_dir = os.path.join(self.main_dir, out_dir)
-        print("out_dir =", out_dir)
-
-        print("output_dir =", self.output_dir)
 
         # Find the input directory with all the code examples
         self.input_dir = Path(self.main_dir).joinpath("dataset", self.dataset)
@@ -49,6 +47,14 @@ class Debug:
     
     def __enter__(self):
         pass
+
+    def wait_for_file(self, filepath, timeout=10):
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if os.path.exists(filepath):
+                return True
+            time.sleep(0.1)
+        return False
 
     def debug(self, content, language, model):
         message = [
@@ -72,14 +78,28 @@ class Debug:
             err_name = "test_fail"
         elif error_type == "runtime error(s)":
             err_name = "runtime_error"
+
+        detailed_report_file = os.path.join(
+            rep_dir,
+            f"{dataset}_compileReport_from_{source}_to_{target}.txt"
+        )
+        with open(detailed_report_file) as f:
+            text = f.read()
+
+        total_instances = int(text.split("Total Instances:")[1].splitlines()[0])
+        total_correct = int(text.split("Total Correct:")[1].splitlines()[0])
+
+        total_incorrect = total_instances - total_correct
+
+        if total_incorrect == 0:
+            return False
         
         json_f = os.path.join(
             rep_dir,
-            dataset,
-            source,
-            target,
             f"{dataset}_{err_name}_report_from_{source}_to_{target}.json"
         )
+
+        self.wait_for_file(json_f, timeout=10)
 
         with open(json_f, "r", encoding="utf-8") as f:
             json_data = json.load(f)
@@ -116,17 +136,22 @@ class Debug:
                     else:
                         print(code_as_str, file=f)
 
+        return True
+
 
     def debug_all_error_general(self, dataset, source, target, translation_dir, rep_dir, model):
-        self.fix_errors(rep_dir, translation_dir, dataset, source, target, "compilation error(s)", model)
-        self.fix_errors(rep_dir, translation_dir, dataset, source, target, "infinite loop error(s)", model)
-        self.fix_errors(rep_dir, translation_dir, dataset, source, target, "test mismatch error(s)", model)
-        self.fix_errors(rep_dir, translation_dir, dataset, source, target, "runtime error(s)", model)
+        tried_fixing = False
+        tried_fixing = self.fix_errors(rep_dir, translation_dir, dataset, source, target, "compilation error(s)", model)
+        tried_fixing = self.fix_errors(rep_dir, translation_dir, dataset, source, target, "infinite loop error(s)", model)
+        tried_fixing = self.fix_errors(rep_dir, translation_dir, dataset, source, target, "test mismatch error(s)", model)
+        tried_fixing = self.fix_errors(rep_dir, translation_dir, dataset, source, target, "runtime error(s)", model)
+        return tried_fixing
 
 def all_errors_fixation(dataset, source, target, translation_dir, rep_dir, out_dir, model):
     debugger = Debug(dataset, model, out_dir)
     logging.info(f"fixing errors from {source} to {target} using {model} and {dataset} dataset")
-    debugger.debug_all_error_general(dataset, source, target, translation_dir, rep_dir, model)
+    tried_fixing = debugger.debug_all_error_general(dataset, source, target, translation_dir, rep_dir, model)
+    return tried_fixing
 
 
 # if __name__ == "__main__":
