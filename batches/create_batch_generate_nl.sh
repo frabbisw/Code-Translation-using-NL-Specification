@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-TEMPLATE_FILE="generate_nl_template.sh"
+TEMPLATE_FILE="generate_template.sh"
 MODEL="magicoder"
 
 datasets=("avatar" "codenet" "codenetintertrans")
@@ -38,7 +38,7 @@ for dataset in "${datasets[@]}"; do
                 continue
             fi
 
-            output_file="generate_nl_${dataset}_${src_lang}_${tgt_lang}.sh"
+            output_file="generate_${dataset}_${src_lang}_${tgt_lang}.sh"
 
             sed \
                 -e "s/##DATASET##/${dataset}/g" \
