@@ -71,6 +71,7 @@ def generate_pseudocode_from_source(content, source, model):
     return response
 
 def run_by_file(dataset, source_lang, filename, model):
+    print(f"starting running file {filename}")
     content_dir = f"dataset/{dataset}/{source_lang}/Code/{filename}"
     content =""
 
