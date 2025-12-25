@@ -6,6 +6,7 @@ import tiktoken
 from dotenv import load_dotenv
 import argparse
 from local_model import LocalCausalLMRunner
+import pdb
 
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/pseudocode_generation.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -87,7 +88,8 @@ def run_by_file(dataset, source_lang, filename, model, models_dir):
         message = f"{content}\n\nGive pseudocode for the above {source} code so that the {source} code is reproducible from the pseudocode. Do not give any other explanation except the pseudocode."
                 
         pseudocode_response = generate_pseudocode_from_source(message, source, model)
-
+        pdb.set_trace()
+        
         pseudocode_file_dir = f"Generations/Pseudocodes/{dataset}/{source}"
         os.makedirs(pseudocode_file_dir, exist_ok=True)
 
