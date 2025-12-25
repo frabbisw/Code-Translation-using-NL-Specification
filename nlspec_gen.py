@@ -71,7 +71,7 @@ def generate_pseudocode_from_source(content, source, model):
     return response
 
 def run_by_file(dataset, source_lang, filename, model):
-    content_dir = f"dataset/{dataset}/{source}/Code/{filename}"
+    content_dir = f"dataset/{dataset}/{source_lang}/Code/{filename}"
     content =""
 
     with open(content_dir, "r") as content_file:
@@ -80,17 +80,17 @@ def run_by_file(dataset, source_lang, filename, model):
 
     skip = False
     base_filename = filename.split(".")[0]
-    pseudocode_file = f"Generations/Pseudocodes/{dataset}/{source}/{base_filename}.txt"
+    pseudocode_file = f"Generations/Pseudocodes/{dataset}/{source_lang}/{base_filename}.txt"
     if os.path.exists(pseudocode_file):
         skip = True
 
     if not skip:
-        message = f"{content}\n\nGive pseudocode for the above {source} code so that the {source} code is reproducible from the pseudocode. Do not give any other explanation except the pseudocode."
+        message = f"{content}\n\nGive pseudocode for the above {source_lang} code so that the {source_lang} code is reproducible from the pseudocode. Do not give any other explanation except the pseudocode."
                 
-        pseudocode_response = generate_pseudocode_from_source(message, source, model)
+        pseudocode_response = generate_pseudocode_from_source(message, source_lang, model)
         pdb.set_trace()
         
-        pseudocode_file_dir = f"Generations/Pseudocodes/{dataset}/{source}"
+        pseudocode_file_dir = f"Generations/Pseudocodes/{dataset}/{source_lang}"
         os.makedirs(pseudocode_file_dir, exist_ok=True)
 
         with open(pseudocode_file, "w") as pseudocode_fp:
