@@ -76,5 +76,11 @@ class LocalCausalLMRunner:
 
         # Decode response
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True).split("@@ Model's Response\n")[-1]
-        response = self.extract_code(response)
+        try:
+            filtered_response = self.extract_code(response)
+        except:
+            filtered_response = response
         return response
+
+
+
