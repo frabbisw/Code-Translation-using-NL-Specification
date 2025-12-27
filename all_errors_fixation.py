@@ -53,7 +53,7 @@ class Debug:
         while time.time() - start_time < timeout:
             if os.path.exists(filepath):
                 return True
-            time.sleep(0.1)
+            time.sleep(0.2)
         return False
 
     def debug(self, content, language, model):
@@ -83,6 +83,9 @@ class Debug:
             rep_dir,
             f"{dataset}_compileReport_from_{source}_to_{target}.txt"
         )
+
+        self.wait_for_file(detailed_report_file, timeout=20)
+
         with open(detailed_report_file) as f:
             text = f.read()
 
@@ -99,7 +102,7 @@ class Debug:
             f"{dataset}_{err_name}_report_from_{source}_to_{target}.json"
         )
 
-        self.wait_for_file(json_f, timeout=10)
+        self.wait_for_file(json_f, timeout=20)
 
         with open(json_f, "r", encoding="utf-8") as f:
             json_data = json.load(f)
