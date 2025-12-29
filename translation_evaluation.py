@@ -392,7 +392,7 @@ def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, targ
     #     test_codenet(source, target, report_dir, translation_dir, test_dir)
 
 def translation_evaluation(dataset, source, target, translated_code_dir, report_dir):
-    test_dir = f"dataset/{dataset}/{source}/TestCases"
+    test_dir = f"{os.getcwd()}/dataset/{dataset}/{source}/TestCases"
     os.makedirs(report_dir, exist_ok=True)
     evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target)
 

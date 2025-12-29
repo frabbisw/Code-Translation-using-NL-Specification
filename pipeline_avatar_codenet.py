@@ -18,8 +18,8 @@ def evaluate_translation(dataset, source, target, translated_code_dir, report_di
     os.chdir(temp_dir)
     try:
         translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
-    except:
-        print("Exception: Evaluate Previous Phase, Translation using source (baseline)")
+    except Exception as e:
+        print(f"Exception: Evaluate Previous Phase, Translation using source (baseline): \n\n {e}\n\n")
     finally:
         temp_files = os.listdir(temp_dir)
         for file in temp_files:
