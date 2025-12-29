@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -J generate_##SRC_LANG##_##TGT_LANG##_##DATASET##_##LANG##
-#SBATCH -n4
+#SBATCH -n1
 #SBATCH --mem=30GB
 #SBATCH --gpus=1
 #SBATCH --time=72:00:00
