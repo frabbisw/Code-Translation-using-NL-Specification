@@ -9,6 +9,7 @@ import json
 import pandas as pd
 import compiler
 import Constants
+import shutil
 
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/translation_evaluation_repair.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -393,8 +394,27 @@ def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, targ
 
 def translation_evaluation(dataset, source, target, translated_code_dir, report_dir):
     test_dir = f"{os.getcwd()}/dataset/{dataset}/{source}/TestCases"
-    os.makedirs(report_dir, exist_ok=True)
-    evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target)
+    current_working_dir = os.getcwd()
+    temp_dir = f"{os.getcwd()}/temp_{dataset}_{source}_{target}"
+    if os.path.isdir(temp_dir):
+        shutil.rmtree(temp_dir)
+    os.makedirs(temp_dir, exist_ok=True)
+    os.chdir(temp_dir)
+    try:
+        os.makedirs(report_dir, exist_ok=True)
+        evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target)
+    except Exception as e:
+        print(f"Exception: Evaluate Previous Phase, Translation using source (baseline): \n\n {e}\n\n")
+    finally:
+        temp_files = os.listdir(temp_dir)
+        for file in temp_files:
+            if not os.path.isdir(f"{temp_dir}/{file}"):
+                os.remove(f"{temp_dir}/{file}")
+            else:
+                shutil.rmtree(f"{temp_dir}/{file}")
+        os.chdir(current_working_dir)
+        shutil.rmtree(temp_dir)
+    
 
 # if __name__ == "__main__":
 #     load_dotenv()
