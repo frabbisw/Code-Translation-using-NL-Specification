@@ -111,7 +111,8 @@ class Debug:
             print(f"Generating Repaired Code: found {error_type}: {len(all_fails)}")
 
             for i in range(len(all_fails)):
-                source_file = f"{translation_dir}/{dataset}/{source}/{target}/{all_fails[i]}" 
+                # source_file = f"{translation_dir}/{dataset}/{source}/{target}/{all_fails[i]}"
+                source_file = f"{translation_dir}/{all_fails[i]}"
                 code_id = Path(source_file).stem
                 with open(source_file, "r") as f:
                     code_as_str = f.read()
