@@ -132,7 +132,10 @@ def test_avatar(source_lang, target_lang, report_dir, translation_dir, test_dir)
                 f_in = f.read()
             f_out = open(test_dir+"/"+ files[i].split(".")[0]+f"_{j}.out", "r").read()
 
-            verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
+            try:
+                verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
+            except Exception as e:
+                verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
             
             if verdict == Constants.TEST_PASSED:
                 tests_passed += 1
@@ -217,8 +220,11 @@ def test_codenet_intertrans(source_lang, target_lang, report_dir, translation_di
             with open(test_dir+"/"+ files[i].split(".")[0]+f"_{j}.in" , 'r') as f:
                 f_in = f.read()
             f_out = open(test_dir+"/"+ files[i].split(".")[0]+f"_{j}.out", "r").read()
-
-            verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
+            
+            try:
+                verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
+            except Exception as e:
+                verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
             
             if verdict == Constants.TEST_PASSED:
                 tests_passed += 1
@@ -293,7 +299,10 @@ def test_codenet(source_lang, target_lang, report_dir, translation_dir, test_dir
             f_in = f.read()
         f_out = open(test_dir+"/"+ files[i].split(".")[0]+".out", "r").read()
 
-        verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
+        try:
+            verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
+        except Exception as e:
+            verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
 
         if verdict == Constants.TEST_PASSED:
             test_passed.append(files[i])
@@ -392,7 +401,7 @@ def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, targ
     # elif dataset == "evalplus":
     #     test_codenet(source, target, report_dir, translation_dir, test_dir)
 
-def translation_evaluation(dataset, source, target, translated_code_dir, report_dir):
+def translation_evaluation(dataset, source, target, translated_code_dir, report_dir, phase):
     test_dir = f"{os.getcwd()}/dataset/{dataset}/{source}/TestCases"
     current_working_dir = os.getcwd()
     temp_dir = f"{os.getcwd()}/temp_{dataset}_{source}_{target}"
@@ -404,7 +413,7 @@ def translation_evaluation(dataset, source, target, translated_code_dir, report_
         os.makedirs(report_dir, exist_ok=True)
         evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target)
     except Exception as e:
-        print(f"Exception: Evaluate Previous Phase, Translation using source (baseline): \n\n {e}\n\n")
+        print(f"Exception: Evaluation in phase ({phase}): \n\n {e}\n\n")
     finally:
         temp_files = os.listdir(temp_dir)
         for file in temp_files:

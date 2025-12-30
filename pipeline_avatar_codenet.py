@@ -76,7 +76,8 @@ if __name__ == "__main__":
         ################################################################################
         translated_code_dir = f"{os.getcwd()}/Generations/translation_source/{dataset}/{source}/{target}"
         report_dir = f"{os.getcwd()}/Generations/translation_source/Reports/{dataset}/{source}/{target}"
-        translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+        phase = "Evaluate Previous Phase, Translation using source (baseline)"
+        translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
         print("Evaluate Previous Phase, Translation using source (baseline)")
 
         ################################################################################
@@ -98,7 +99,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_source/itr1/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_source/itr1/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 1 (source)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 1 (source)")
 
         ################################################################################
@@ -119,7 +121,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_source/itr2/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_source/itr2/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 2 (source)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 2 (source)")
 
         ################################################################################
@@ -140,7 +143,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_source/itr3/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_source/itr3/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 3 (source)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 3 (source)")
 
     if both_phase or nl_spec_phase:
@@ -166,7 +170,8 @@ if __name__ == "__main__":
         ################################################################################
         translated_code_dir = f"{os.getcwd()}/Generations/translation_nl/{dataset}/{source}/{target}"
         report_dir = f"{os.getcwd()}/Generations/translation_nl/Reports/{dataset}/{source}/{target}"
-        translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+        phase = "Evaluate Previous Phase, Translation Using NL"
+        translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
         print("Evaluate Previous Phase, Translation Using NL")    
     
         ################################################################################
@@ -188,7 +193,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_nl/itr1/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_nl/itr1/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 1 (NL)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 1 (NL)")
 
         ################################################################################
@@ -210,7 +216,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_nl/itr2/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_nl/itr2/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 2 (NL)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 2 (NL)")
 
         ################################################################################
@@ -231,7 +238,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_nl/itr3/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_nl/itr3/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 3 (NL)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 3 (NL)")
 
 
@@ -249,7 +257,8 @@ if __name__ == "__main__":
         ################################################################################
         translated_code_dir = f"{os.getcwd()}/Generations/translation_nl_and_source/{dataset}/{source}/{target}"
         report_dir = f"{os.getcwd()}/Generations/translation_nl_and_source/Reports/{dataset}/{source}/{target}"
-        translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+        phase = "Evaluate Previous Phase, Translation Using NL+SC"
+        translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
         print("Evaluate Previous Phase, Translation Using NL+SC")
 
         ################################################################################
@@ -272,7 +281,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_nl_and_source/itr1/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_nl_and_source/itr1/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 1 (NL+SC)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 1 (NL+SC)")
 
         ################################################################################
@@ -293,7 +303,8 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_nl_and_source/itr2/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_nl_and_source/itr2/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 2 (NL+SC)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 2 (NL+SC)")
 
         ################################################################################
@@ -315,5 +326,6 @@ if __name__ == "__main__":
         if skip_iter == False:
             translated_code_dir = f"{os.getcwd()}/Repair/translation_nl_and_source/itr3/{dataset}/{source}/{target}"
             report_dir = f"{os.getcwd()}/Repair/translation_nl_and_source/itr3/Reports/{dataset}/{source}/{target}"
-            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir)
+            phase = "Evaluate Previous Phase, Repair Iteration 3 (NL+SC)"
+            translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase)
             print("Evaluate Previous Phase, Repair Iteration 3 (NL+SC)")
