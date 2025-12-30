@@ -15,8 +15,9 @@ class LocalCausalLMRunner:
         # Load model with device mapping
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_path,
-            device_map="auto",
-            dtype=torch.bfloat16
+            device_map="cuda",        # force GPU
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True
         )
 
         print(f"Allocated: {torch.cuda.memory_allocated(0) / 1024**2:.2f} MB")
@@ -64,15 +65,25 @@ class LocalCausalLMRunner:
         prompt = context_msg + "\n" + user_msg + "\n@@ Model's Response\n"
 
         # Tokenize input
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
+        # inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
+        MAX_INPUT_TOKENS = 10000  # leave room for generation        
+        inputs = self.tokenizer(
+            prompt,
+            return_tensors="pt",
+            truncation=True,
+            max_length=MAX_INPUT_TOKENS
+        ).to(self.model.device)
 
         # Generate output
-        outputs = self.model.generate(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
-            max_new_tokens=max_new_tokens,
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
+        with torch.no_grad():
+            outputs = self.model.generate(
+                input_ids=inputs["input_ids"],
+                attention_mask=inputs["attention_mask"],
+                max_new_tokens=max_new_tokens,
+                pad_token_id=self.tokenizer.eos_token_id,
+                do_sample=False,
+                use_cache=True
+            )
 
         # Decode response
         response = self.tokenizer.decode(outputs[0], skip_special_tokens=True).split("@@ Model's Response\n")[-1]
