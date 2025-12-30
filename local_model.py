@@ -1,97 +1,120 @@
+import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
+
 
 class LocalCausalLMRunner:
     def __init__(self, model_path: str):
         self.model_path = model_path
         self.model_name = model_path.split("/")[-1]
 
-        print("CUDA available:", torch.cuda.is_available())
+        # ---- CUDA sanity (DO NOT TOUCH CUDA IF BROKEN) ----
+        try:
+            cuda_ok = torch.cuda.is_available()
+        except Exception:
+            cuda_ok = False
+
+        print("CUDA available:", cuda_ok)
         print("CUDA device count:", torch.cuda.device_count())
 
-        # Load tokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        # ---- Select device safely ----
+        if cuda_ok:
+            self.device = torch.device("cuda")
+            dtype = torch.float16
+            device_map = "auto"
+        else:
+            self.device = torch.device("cpu")
+            dtype = torch.float32
+            device_map = None   # IMPORTANT
 
-        # Load model with device mapping
-        self.model = AutoModelForCausalLM.from_pretrained(
+        # ---- Load tokenizer ----
+        self.tokenizer = AutoTokenizer.from_pretrained(
             self.model_path,
-            device_map="cuda",        # force GPU
-            torch_dtype=torch.float16,
-            low_cpu_mem_usage=True
+            use_fast=True
         )
 
-        print(f"Allocated: {torch.cuda.memory_allocated(0) / 1024**2:.2f} MB")
-        print(f"Cached:    {torch.cuda.memory_reserved(0) / 1024**2:.2f} MB")
-        
-        # Print memory footprint
-        print(f"Memory footprint: {self.model.get_memory_footprint() / 1024**2:.2f} MB")
-        
-        # Check which device the model is on
-        print(f"Model is loaded on: {self.model.device}")
+        # ---- Load model (SAFE) ----
+        with torch.no_grad():
+            self.model = AutoModelForCausalLM.from_pretrained(
+                self.model_path,
+                device_map=device_map,
+                dtype=dtype,
+                low_cpu_mem_usage=True
+            )
 
-    def extract_code(self, code):
-        lang_labels = ["py", "Python", "python", "cpp", "c++", "C++", "C", "c", "Go", "go", "Java", "java"]
-    
-        # Normalize and strip the text
-        code = code.replace('\r\n', '\n').strip()
-    
-        # Find first triple-quote block (''')
-        first = code.find("```")
-        if first == -1:
-            return code  # No code block found
-    
-        # Find the second triple quote starting after the first
-        second = code.find("```", first + 3)
-        if second == -1:
-            return code[3 + code.find("```")]  # No closing block found
-    
-        # Extract content between the triple quotes
-        block = code[first + 3:second].strip()
-    
-        # Split into lines
+        self.model.eval()
+
+        # ---- Diagnostics (guarded) ----
+        if cuda_ok:
+            print(f"Allocated: {torch.cuda.memory_allocated() / 1024**2:.2f} MB")
+            print(f"Cached:    {torch.cuda.memory_reserved() / 1024**2:.2f} MB")
+
+        print(f"Model loaded on: {self.device}")
+
+    # --------------------------------------------------
+
+    def extract_code(self, code: str):
+        lang_labels = {
+            "py", "python", "cpp", "c++", "c", "java", "go"
+        }
+
+        code = code.replace("\r\n", "\n").strip()
+        start = code.find("```")
+        if start == -1:
+            return code
+
+        end = code.find("```", start + 3)
+        if end == -1:
+            return code[start + 3:]
+
+        block = code[start + 3:end].strip()
         lines = block.splitlines()
-    
-        # Remove language label if present
-        if lines:
-            first_line = lines[0].strip("` ").strip()
-            if first_line in lang_labels:
-                lines = lines[1:]
-    
+
+        if lines and lines[0].strip().lower() in lang_labels:
+            lines = lines[1:]
+
         return "\n".join(lines).strip()
-    
-    def run(self, message, max_new_tokens=1000):
-        context_msg = message[0]["content"] if message[0]["role"] == "system" else ""
-        user_msg = message[1]["content"] if message[1]["role"] == "user" else message[0]["content"]
+
+    # --------------------------------------------------
+
+    def run(self, message, max_new_tokens=768):
+        context_msg = ""
+        user_msg = ""
+
+        if message[0]["role"] == "system":
+            context_msg = message[0]["content"]
+            user_msg = message[1]["content"]
+        else:
+            user_msg = message[0]["content"]
+
         prompt = context_msg + "\n" + user_msg + "\n@@ Model's Response\n"
 
-        # Tokenize input
-        # inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-        MAX_INPUT_TOKENS = 10000  # leave room for generation        
+        # ---- HARD TOKEN CAP (MANDATORY) ----
         inputs = self.tokenizer(
             prompt,
             return_tensors="pt",
             truncation=True,
-            max_length=MAX_INPUT_TOKENS
-        ).to(self.model.device)
+            max_length=10000   # SAFE FOR MAGICODER
+        )
 
-        # Generate output
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+        # ---- Generation (safe) ----
         with torch.no_grad():
             outputs = self.model.generate(
-                input_ids=inputs["input_ids"],
-                attention_mask=inputs["attention_mask"],
+                **inputs,
                 max_new_tokens=max_new_tokens,
                 pad_token_id=self.tokenizer.eos_token_id,
                 do_sample=False,
                 use_cache=True
             )
 
-        # Decode response
-        response = self.tokenizer.decode(outputs[0], skip_special_tokens=True).split("@@ Model's Response\n")[-1]
+        response = self.tokenizer.decode(
+            outputs[0],
+            skip_special_tokens=True
+        ).split("@@ Model's Response\n")[-1]
+
         try:
-            filtered_response = self.extract_code(response)
-        except:
-            filtered_response = response
-        return response
-
-
-
+            return self.extract_code(response)
+        except Exception:
+            return response
