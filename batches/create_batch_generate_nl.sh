@@ -14,7 +14,6 @@ source_languages_codenet=("C" "C++" "Go" "Python" "Java")
 source_languages_codenetintertrans=("C++" "Go" "Python" "Java")
 
 for dataset in "${datasets[@]}"; do
-    # Select source languages based on dataset
     case "$dataset" in
         avatar)
             source_languages=("${source_languages_avatar[@]}")
@@ -33,18 +32,25 @@ for dataset in "${datasets[@]}"; do
 
     for src_lang in "${source_languages[@]}"; do
         for tgt_lang in "${target_languages[@]}"; do
-            # Skip same-language pairs
             if [[ "$src_lang" == "$tgt_lang" ]]; then
                 continue
             fi
 
             output_file="generate_${dataset}_${src_lang}_${tgt_lang}.sh"
 
+            # Decide replacement for ########
+            sed_extra=()
+            if [[ "$tgt_lang" == "C" || "$tgt_lang" == "C++" ]]; then
+                X=$((RANDOM % 4 + 1))
+                sed_extra+=(-e "s/########/#SBATCH -w virya${X}/g")
+            fi
+
             sed \
                 -e "s/##DATASET##/${dataset}/g" \
                 -e "s/##SRC_LANG##/${src_lang}/g" \
                 -e "s/##TGT_LANG##/${tgt_lang}/g" \
                 -e "s/##MODEL##/${MODEL}/g" \
+                "${sed_extra[@]}" \
                 "$TEMPLATE_FILE" > "$output_file"
 
             chmod +x "$output_file"
