@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J ##SRC_LANG##_##TGT_LANG##_##DATASET##
+#SBATCH -J ##DATASET##_##SRC_LANG##_##TGT_LANG##
 #SBATCH -n1
 #SBATCH --mem=30GB
 #SBATCH --gpus=1
