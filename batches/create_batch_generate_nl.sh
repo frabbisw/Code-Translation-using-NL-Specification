@@ -40,10 +40,13 @@ for dataset in "${datasets[@]}"; do
 
             # Decide replacement for ########
             sed_extra=()
-            if [[ "$tgt_lang" == "C" || "$tgt_lang" == "C++" ]]; then
-                X=$((RANDOM % 4 + 1))
-                sed_extra+=(-e "s/########/#SBATCH -w virya${X}/g")
-            fi
+            # if [[ "$tgt_lang" == "C" || "$tgt_lang" == "C++" ]]; then
+            #     X=$((RANDOM % 4 + 1))
+            #     sed_extra+=(-e "s/########/#SBATCH -w virya${X}/g")
+            # fi
+            X=$((RANDOM % 4 + 1))
+            sed_extra+=(-e "s/########/#SBATCH -w virya${X}/g")
+
 
             sed \
                 -e "s/##DATASET##/${dataset}/g" \
