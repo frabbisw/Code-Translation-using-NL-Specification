@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-TEMPLATE_FILE="generate_template.sh"
+TEMPLATE_FILE="template.sh"
 MODEL="magicoder"
 
 datasets=("avatar" "codenet" "codenetintertrans")
