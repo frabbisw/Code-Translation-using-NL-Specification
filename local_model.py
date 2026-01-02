@@ -20,7 +20,7 @@ class LocalCausalLMRunner:
         # ---- Select device safely ----
         if cuda_ok:
             self.device = torch.device("cuda")
-            dtype = torch.float16
+            dtype = torch.bfloat16
             device_map = "auto"
         else:
             self.device = torch.device("cpu")
