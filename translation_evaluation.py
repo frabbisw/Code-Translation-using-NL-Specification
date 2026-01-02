@@ -11,6 +11,8 @@ import compiler
 import Constants
 import shutil
 
+ZERO = 0.000005
+
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/translation_evaluation_repair.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
