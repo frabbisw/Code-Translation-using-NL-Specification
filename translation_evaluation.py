@@ -11,8 +11,6 @@ import compiler
 import Constants
 import shutil
 
-ZERO = 0.000005
-
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/translation_evaluation_repair.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -38,6 +36,7 @@ def generate_report(source_lang, target_lang, report_dir, dataset, compile_faile
         total_inf = len(list(infinite_loop_dict.keys()))
         total = total_test_passed+total_compile_fail+total_runtime+total_test_mismatch+total_inf
 
+        ZERO = 0.000005
         report.writelines("Total Instances: {}\n\n".format(total))
         report.writelines("Total Correct: {}\n".format(total_test_passed))
         report.writelines("Total Runtime Failed: {}\n".format(total_runtime))
