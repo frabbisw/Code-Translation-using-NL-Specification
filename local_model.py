@@ -77,7 +77,7 @@ class LocalCausalLMRunner:
 
     # --------------------------------------------------
 
-    def run(self, message, max_new_tokens=768):
+    def run(self, message, max_new_tokens=1024):
         context_msg = ""
         user_msg = ""
 
