@@ -94,7 +94,7 @@ class LocalCausalLMRunner:
             prompt,
             return_tensors="pt",
             truncation=True,
-            max_length=10000   # SAFE FOR MAGICODER
+            max_length=2048   # SAFE FOR MAGICODER
         )
 
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
@@ -106,7 +106,7 @@ class LocalCausalLMRunner:
                 max_new_tokens=max_new_tokens,
                 pad_token_id=self.tokenizer.eos_token_id,
                 do_sample=False,
-                use_cache=True
+                use_cache=False
             )
 
         response = self.tokenizer.decode(
