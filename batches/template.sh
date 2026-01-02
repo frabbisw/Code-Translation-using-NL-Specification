@@ -8,7 +8,7 @@
 #SBATCH -o _%x%J.out
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=osdefr@gmail.com
-########
+#######-
 
 source /etc/profile.d/modules.sh
 
