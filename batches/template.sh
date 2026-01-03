@@ -2,7 +2,7 @@
 
 #SBATCH -J ##DATASET##_##SRC_LANG##_##TGT_LANG##
 #SBATCH -n1
-#SBATCH --mem=30GB
+#SBATCH --mem=60GB
 #SBATCH --gpus=2
 #SBATCH --time=72:00:00
 #SBATCH -o _%x%J.out
