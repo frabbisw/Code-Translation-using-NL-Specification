@@ -36,17 +36,18 @@ def generate_report(source_lang, target_lang, report_dir, dataset, compile_faile
         total_inf = len(list(infinite_loop_dict.keys()))
         total = total_test_passed+total_compile_fail+total_runtime+total_test_mismatch+total_inf
 
+        ZERO = 0.000005
         report.writelines("Total Instances: {}\n\n".format(total))
         report.writelines("Total Correct: {}\n".format(total_test_passed))
         report.writelines("Total Runtime Failed: {}\n".format(total_runtime))
         report.writelines("Total Compilation Failed: {}\n".format(total_compile_fail))
         report.writelines("Total Test Failed: {}\n".format(total_test_mismatch))
         report.writelines("Total Infinite Loop: {}\n\n".format(total_inf))
-        report.writelines("Accuracy: {}\n".format((total_test_passed/total) * 100))
-        report.writelines("Runtime Rate: {}\n".format((len(runtime_failed)/total) * 100))
-        report.writelines("Compilation Rate: {}\n".format((len(compile_failed)/total) * 100))
-        report.writelines("Test Failed Rate: {}\n".format((len(test_failed)/total) * 100))
-        report.writelines("Infinite Loop Rate: {}\n\n".format((len(infinite_loop)/total) * 100))
+        report.writelines("Accuracy: {}\n".format((total_test_passed/max(ZERO,total)) * 100))
+        report.writelines("Runtime Rate: {}\n".format((len(runtime_failed)/max(ZERO,total)) * 100))
+        report.writelines("Compilation Rate: {}\n".format((len(compile_failed)/max(ZERO,total)) * 100))
+        report.writelines("Test Failed Rate: {}\n".format((len(test_failed)/max(ZERO,total)) * 100))
+        report.writelines("Infinite Loop Rate: {}\n\n".format((len(infinite_loop)/max(ZERO,total)) * 100))
         report.writelines("=================================================================================================\n")
         report.writelines("Failed Test Files: {} \n".format(test_failed))
         report.writelines("Failed Test Details: {} \n".format(test_failed_details))
