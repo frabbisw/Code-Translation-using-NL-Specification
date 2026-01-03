@@ -121,10 +121,12 @@ class LocalCausalLMRunner:
         print("before")
         print("-"*100)
         print(response)
+        print("="*100)
         response = response.split("@@ Model's Response\n")[-1]
         print("before")
         print("-"*100)
         print(after)
+        print("="*100)
         
         if self.total_run % 50 == 0:
             if torch.cuda.is_available():
@@ -132,6 +134,12 @@ class LocalCausalLMRunner:
             gc.collect()
         
         try:
-            return self.extract_code(response)
+            response = self.extract_code(response)            
+            print("filtered")
+            print("-"*100)
+            print(after)
+            print("="*100)
+
+            return response
         except Exception:
             return response
