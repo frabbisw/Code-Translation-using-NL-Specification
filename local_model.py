@@ -117,8 +117,15 @@ class LocalCausalLMRunner:
         response = self.tokenizer.decode(
             outputs[0],
             skip_special_tokens=True
-        ).split("@@ Model's Response\n")[-1]
-
+        )
+        print("before")
+        print("-"*100)
+        print(response)
+        response = response.split("@@ Model's Response\n")[-1]
+        print("before")
+        print("-"*100)
+        print(after)
+        
         if self.total_run % 50 == 0:
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
