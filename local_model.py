@@ -123,9 +123,9 @@ class LocalCausalLMRunner:
         print(response)
         print("="*100)
         response = response.split("@@ Model's Response\n")[-1]
-        print("before")
+        print("after")
         print("-"*100)
-        print(after)
+        print(response)
         print("="*100)
         
         if self.total_run % 50 == 0:
