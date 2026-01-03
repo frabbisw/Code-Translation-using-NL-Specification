@@ -171,3 +171,4 @@ translation/base_translation/gpt-4o-mini (copy)/
 *_report_from_*.json
 logs/
 Repair/
+.vscode/

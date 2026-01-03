@@ -28,7 +28,7 @@ class Debug:
 
         self.main_dir = os.getcwd()
         # example out_dir = "repair_nl_and_source/debug_on_translated_codes_itr4"
-        self.output_dir = os.path.join(self.main_dir, out_dir)
+        self.output_dir = out_dir
 
         # Find the input directory with all the code examples
         self.input_dir = Path(self.main_dir).joinpath("dataset", self.dataset)
@@ -38,10 +38,6 @@ class Debug:
         if not self.input_dir.exists():
             logging.error(f"directory {str(self.input_dir)} does not exist. raising FileNotFoundError")
             raise FileNotFoundError(f"Directory {str(self.input_dir)} does not exist.")
-
-        self.out_dir = Path(self.output_dir).joinpath(self.dataset)
-        if not self.out_dir.exists():
-            self.out_dir.mkdir(parents=True)
 
         # return self
     
@@ -116,7 +112,7 @@ class Debug:
                 with open(source_file, "r") as f:
                     code_as_str = f.read()
                     f.close()
-                target_dir = self.out_dir.joinpath(f"{source}", f"{target}")
+                target_dir = Path(self.output_dir)
                 if not target_dir.exists():
                     target_dir.mkdir(parents=True)
 
