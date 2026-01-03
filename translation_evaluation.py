@@ -137,6 +137,7 @@ def test_avatar(source_lang, target_lang, report_dir, translation_dir, test_dir)
                 verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
             except Exception as e:
                 verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
+            report = report[:500]
             
             if verdict == Constants.TEST_PASSED:
                 tests_passed += 1
@@ -226,6 +227,7 @@ def test_codenet_intertrans(source_lang, target_lang, report_dir, translation_di
                 verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
             except Exception as e:
                 verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
+            report = report[:500]
             
             if verdict == Constants.TEST_PASSED:
                 tests_passed += 1
@@ -304,6 +306,7 @@ def test_codenet(source_lang, target_lang, report_dir, translation_dir, test_dir
             verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
         except Exception as e:
             verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
+        report = report[:500]
 
         if verdict == Constants.TEST_PASSED:
             test_passed.append(files[i])
