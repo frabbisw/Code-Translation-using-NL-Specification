@@ -24,6 +24,9 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 eval "$(conda shell.bash hook)"
 conda activate code_trans
+
+nvidia-smi
+
 cd ../
 # python nlspec_adapter.py magicoder /home/f_rabbi/models ##DATASET## ##LANG##
 python pipeline_avatar_codenet.py  --dataset ##DATASET## --source_lang ##SRC_LANG## --target_lang ##TGT_LANG## --model ##MODEL## --models_dir /home/f_rabbi/models -n -s -b
