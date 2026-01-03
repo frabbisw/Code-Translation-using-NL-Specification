@@ -330,3 +330,8 @@ if __name__ == "__main__":
             phase = "Evaluate Previous Phase, Repair Iteration 3 (NL+SC)"
             translation_evaluation.translation_evaluation(dataset=dataset, source=source, target=target, translated_code_dir=translated_code_dir, report_dir=report_dir, phase=phase, model=model_name)
             print("Evaluate Previous Phase, Repair Iteration 3 (NL+SC)")
+
+        if isinstance(model, LocalCausalLMRunner):
+            print("-"*100)
+            print(f"Total Run: {model.total_run}")
+            print("-"*100)
