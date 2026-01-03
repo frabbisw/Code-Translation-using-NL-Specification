@@ -15,13 +15,16 @@ def generate_translation_from_pseudocode(content, to, model):
     
     if isinstance(model, str) and "gpt" in model:
         print(f"model {model} is selected. fetching response using api ...")
-        response = OpenAICall.send_message_to_openai(message)
+        response = OpenAICall.send_message_to_openai(message, model)
+    elif isinstance(model, str) and "deepseek" in model:
+        print(f"model {model} is selected. fetching response using api ...")
+        response = OpenAICall.send_message_to_deepseek(message)
     elif isinstance(model, LocalCausalLMRunner):
         print(f"model {model.model_name} is selected. running locally ...")
         response = model.run(message)
     return response.replace("cpp\n", "").replace(f"```{to.lower()}", "").replace("```", "")
 
-def translation_generation_nl_sc(dataset, source, target, filename, model):
+def translation_generation_nl_sc(dataset, source, target, filename, model, model_name):
     file_basename = filename.split(".")[0]
     file_ext = "c"
     if target == "Java":
@@ -32,9 +35,13 @@ def translation_generation_nl_sc(dataset, source, target, filename, model):
         file_ext = "go"
     elif target == "C++":
         file_ext = "cpp"
+    elif target == "Javascript":
+        file_ext = "js"
+    elif target == "Rust":
+        file_ext = "rs" 
     
     content_dir = f"dataset/{dataset}/{source}/Code/{filename}"
-    pseudocode_dir = f"Generations/Pseudocodes/{dataset}/{source}/{file_basename}.txt"
+    pseudocode_dir = f"Generations/{model_name}/Pseudocodes/{dataset}/{source}/{file_basename}.txt"
     content =""
     pseudocode_content = ""
 
@@ -48,7 +55,7 @@ def translation_generation_nl_sc(dataset, source, target, filename, model):
 
     
     skip = False
-    target_file = f"Generations/translation_nl_and_source/{dataset}/{source}/{target}/{file_basename}.{file_ext}"
+    target_file = f"Generations/{model_name}/translation_nl_and_source/{dataset}/{source}/{target}/{file_basename}.{file_ext}"
     if os.path.exists(target_file):
         skip = True
 
@@ -62,7 +69,7 @@ def translation_generation_nl_sc(dataset, source, target, filename, model):
 
         target_response = re.sub('public\s*class\s*.+', 'public class ' + file_basename + ' {', target_response)
 
-        target_file_dir = f"Generations/translation_nl_and_source/{dataset}/{source}/{target}"
+        target_file_dir = f"Generations/{model_name}/translation_nl_and_source/{dataset}/{source}/{target}"
         os.makedirs(target_file_dir, exist_ok=True)
 
         with open(target_file, "w") as target_fp:

@@ -19,7 +19,9 @@ class Debug:
         "C": "c",
         "C++": "cpp",
         "Rust": "rs",
-        "C#": "cs"
+        "C#": "cs",
+        "Javascript": "js",
+        "Rust": "rs"
     }
 
     def __init__(self, dataset, model, out_dir) -> None:
@@ -58,7 +60,10 @@ class Debug:
             {"role": "user", "content": content}]
         if isinstance(model, str) and "gpt" in model:
             print(f"model {model} is selected. fetching response using api ...")
-            response = OpenAICall.send_message_to_openai(message)
+            response = OpenAICall.send_message_to_openai(message, model)
+        elif isinstance(model, str) and "deepseek" in model:
+            print(f"model {model} is selected. fetching response using api ...")
+            response = OpenAICall.send_message_to_deepseek(message)
         elif isinstance(model, LocalCausalLMRunner):
             print(f"model {model.model_name} is selected. running locally ...")
             response = model.run(message)

@@ -264,6 +264,162 @@ def _test_go(go_code_file_dir, go_file_name, input_content, output_content):
             return Constants.TEST_MISMATCH, f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}", {"Actual": str(f_out), "Generated": str(stdout)}
         else:
             return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}", {"Error_Type": str(stderr_data.decode())}
+        
+
+def _test_javascript(js_code_file_dir, js_file_name, input_content, output_content):
+    try:
+        subprocess.run(
+            f"node --check {js_code_file_dir}/{js_file_name}",
+            check=True,
+            capture_output=True,
+            shell=True,
+            timeout=100
+        )
+    except subprocess.CalledProcessError as e:
+        if '# Token size exceeded.' in open(js_file_name, 'r').read():
+            return Constants.TOKEN_LIMIT, "", {}
+        else:
+            return (
+                Constants.COMPILATION_ERROR,
+                f"Compilation_Error: {e.stderr.decode()}",
+                {"Compilation_Error": e.stderr.decode()}
+            )
+
+    f_out = output_content
+    p = Popen(
+        ['node', js_file_name],
+        cwd=js_code_file_dir,
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=PIPE
+    )
+
+    try:
+        stdout, stderr_data = p.communicate(input=input_content.encode(), timeout=30)
+    except subprocess.TimeoutExpired:
+        p.send_signal(signal.SIGINT)
+        try:
+            stdout, stderr_data = p.communicate(timeout=5)
+            return Constants.INFINITE_LOOP, stdout.decode(), {"Inf_Loop_Info": stdout.decode()}
+        except subprocess.TimeoutExpired:
+            return (
+                Constants.INFINITE_LOOP,
+                f"Inf. Loop for Input: {str(input_content)}",
+                {"Inf. Loop for Input": str(input_content)}
+            )
+
+    try:
+        if float(stdout.decode(errors="ignore")) % 1 == 0:
+            stdout = str(int(float(stdout.decode(errors="ignore"))))
+            f_out = str(int(float(f_out)))
+        else:
+            stdout_temp = stdout.decode(errors="ignore").strip()
+            f_out_temp = f_out.strip()
+            min_dec_points = min(
+                len(stdout_temp.split(".")[1]),
+                len(f_out_temp.split(".")[1])
+            )
+            stdout = str(round(float(stdout_temp), min_dec_points))
+            f_out = str(round(float(f_out), min_dec_points))
+    except:
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="ignore")
+
+    if stdout.strip() == f_out.strip():
+        return Constants.TEST_PASSED, "", {}
+    else:
+        if compare_outputs(stdout.strip(), f_out.strip()):
+            return Constants.TEST_PASSED, "", {}
+        elif stderr_data.decode() == "":
+            return (
+                Constants.TEST_MISMATCH,
+                f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}",
+                {"Actual": str(f_out), "Generated": str(stdout)}
+            )
+        else:
+            return (
+                Constants.RUNTIME_ERROR,
+                f"Error_Type: {stderr_data.decode()}",
+                {"Error_Type": stderr_data.decode()}
+            )
+
+
+def _test_rust(rust_code_file_dir, rust_file_name, input_content, output_content):
+    try:
+        subprocess.run(
+            f"rustc {rust_code_file_dir}/{rust_file_name} -O -o exec_output",
+            check=True,
+            capture_output=True,
+            shell=True,
+            timeout=100
+        )
+    except subprocess.CalledProcessError as e:
+        if '# Token size exceeded.' in open(rust_file_name, 'r').read():
+            return Constants.TOKEN_LIMIT, "", {}
+        else:
+            return (
+                Constants.COMPILATION_ERROR,
+                f"Compilation_Error: {e.stderr.decode()}",
+                {"Compilation_Error": e.stderr.decode()}
+            )
+
+    f_out = output_content
+    p = Popen(
+        ['./exec_output'],
+        cwd=os.getcwd(),
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=PIPE
+    )
+
+    try:
+        stdout, stderr_data = p.communicate(input=input_content.encode(), timeout=5)
+    except subprocess.TimeoutExpired:
+        p.send_signal(signal.SIGINT)
+        try:
+            stdout, stderr_data = p.communicate(timeout=5)
+            return Constants.INFINITE_LOOP, stdout.decode(), {"Inf_Loop_Info": stdout.decode()}
+        except subprocess.TimeoutExpired:
+            return (
+                Constants.INFINITE_LOOP,
+                f"Inf. Loop for Input: {str(input_content)}",
+                {"Inf. Loop for Input": str(input_content)}
+            )
+
+    try:
+        if float(stdout.decode(errors="ignore")) % 1 == 0:
+            stdout = str(int(float(stdout.decode(errors="ignore"))))
+            f_out = str(int(float(f_out)))
+        else:
+            stdout_temp = stdout.decode(errors="ignore").strip()
+            f_out_temp = f_out.strip()
+            min_dec_points = min(
+                len(stdout_temp.split(".")[1]),
+                len(f_out_temp.split(".")[1])
+            )
+            stdout = str(round(float(stdout_temp), min_dec_points))
+            f_out = str(round(float(f_out), min_dec_points))
+    except:
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="ignore")
+
+    if stdout.strip() == f_out.strip():
+        return Constants.TEST_PASSED, "", {}
+    else:
+        if compare_outputs(stdout.strip(), f_out.strip()):
+            return Constants.TEST_PASSED, "", {}
+        elif stderr_data.decode() == "":
+            return (
+                Constants.TEST_MISMATCH,
+                f"Input: {str(input_content)} Expected/Actual: {str(f_out)} Generated: {str(stdout)}",
+                {"Actual": str(f_out), "Generated": str(stdout)}
+            )
+        else:
+            return (
+                Constants.RUNTIME_ERROR,
+                f"Error_Type: {stderr_data.decode()}",
+                {"Error_Type": stderr_data.decode()}
+            )
 
 
 def test(code_file_dir, file_name, input_content, output_content, source_lang):
@@ -277,6 +433,10 @@ def test(code_file_dir, file_name, input_content, output_content, source_lang):
         return _test_cpp(code_file_dir, file_name, input_content, output_content)
     elif source_lang == "Go":
         return _test_go(code_file_dir, file_name, input_content, output_content)
+    elif source_lang == "Javascript":
+        return _test_javascript(code_file_dir, file_name, input_content, output_content)
+    elif source_lang == "Rust":
+        return _test_rust(code_file_dir, file_name, input_content, output_content)
     
 
 def _output_java(java_code_file_dir, java_file_name, input_content):
@@ -477,6 +637,114 @@ def _output_go(go_code_file_dir, go_file_name, input_content):
         return Constants.OUTPUT_GENERATED, str(stdout)
     else:
         return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}"
+    
+
+def _output_javascript(js_code_file_dir, js_file_name, input_content):
+    # Syntax check (closest to "compilation" for JS)
+    try:
+        subprocess.run(
+            "node --check " + js_code_file_dir + "/" + js_file_name,
+            check=True,
+            capture_output=True,
+            shell=True,
+            timeout=100
+        )
+    except subprocess.CalledProcessError as e:
+        if '# Token size exceeded.' in open(js_code_file_dir + "/" + js_file_name, 'r').read():
+            return Constants.TOKEN_LIMIT, ""
+        else:
+            return Constants.COMPILATION_ERROR, f"Compilation_Error: {e.stderr.decode()}"
+
+    # Run
+    p = Popen(
+        ['node', js_file_name],
+        cwd=js_code_file_dir,
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=PIPE
+    )
+    try:
+        stdout, stderr_data = p.communicate(input=input_content.encode(), timeout=30)
+    except subprocess.TimeoutExpired:
+        p.send_signal(signal.SIGINT)
+        try:
+            stdout, stderr_data = p.communicate(timeout=5)
+            return Constants.INFINITE_LOOP, f"{stdout.decode()}"
+        except subprocess.TimeoutExpired:
+            return Constants.INFINITE_LOOP, f"Inf. Loop for Input: {str(input_content)}"
+
+    # Normalize numeric output (same pattern as your Java)
+    try:
+        out_str = stdout.decode(errors="ignore")
+        if float(out_str) % 1 == 0:
+            stdout = str(int(float(out_str)))
+        else:
+            stdout_temp = out_str.strip()
+            stdout_total_dec_points = len(stdout_temp.split(".")[1])
+            stdout = str(round(float(out_str), stdout_total_dec_points))
+    except:
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="ignore")
+
+    # Return
+    if stderr_data.decode() == '':
+        return Constants.OUTPUT_GENERATED, str(stdout)
+    else:
+        return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}"
+
+
+def _output_rust(rust_code_file_dir, rust_file_name, input_content):
+    # Compile
+    try:
+        subprocess.run(
+            "rustc " + rust_code_file_dir + "/" + rust_file_name + " -O -o exec_output",
+            check=True,
+            capture_output=True,
+            shell=True,
+            timeout=100
+        )
+    except subprocess.CalledProcessError as e:
+        if '# Token size exceeded.' in open(rust_code_file_dir + "/" + rust_file_name, 'r').read():
+            return Constants.TOKEN_LIMIT, ""
+        else:
+            return Constants.COMPILATION_ERROR, f"Compilation_Error: {e.stderr.decode()}"
+
+    # Run binary
+    p = Popen(
+        ['./exec_output'],
+        cwd=os.getcwd(),   # binary is in this dir (matches your pattern)
+        stdin=PIPE,
+        stdout=PIPE,
+        stderr=PIPE
+    )
+    try:
+        stdout, stderr_data = p.communicate(input=input_content.encode(), timeout=30)
+    except subprocess.TimeoutExpired:
+        p.send_signal(signal.SIGINT)
+        try:
+            stdout, stderr_data = p.communicate(timeout=5)
+            return Constants.INFINITE_LOOP, f"{stdout.decode()}"
+        except subprocess.TimeoutExpired:
+            return Constants.INFINITE_LOOP, f"Inf. Loop for Input: {str(input_content)}"
+
+    # Normalize numeric output (same pattern as your Java)
+    try:
+        out_str = stdout.decode(errors="ignore")
+        if float(out_str) % 1 == 0:
+            stdout = str(int(float(out_str)))
+        else:
+            stdout_temp = out_str.strip()
+            stdout_total_dec_points = len(stdout_temp.split(".")[1])
+            stdout = str(round(float(out_str), stdout_total_dec_points))
+    except:
+        if isinstance(stdout, bytes):
+            stdout = stdout.decode(errors="ignore")
+
+    # Return
+    if stderr_data.decode() == '':
+        return Constants.OUTPUT_GENERATED, str(stdout)
+    else:
+        return Constants.RUNTIME_ERROR, f"Error_Type: {str(stderr_data.decode())}"
 
 
 def get_output(code_file_dir, file_name, input_content, source_lang):
@@ -490,6 +758,10 @@ def get_output(code_file_dir, file_name, input_content, source_lang):
         return _output_cpp(code_file_dir, file_name, input_content)
     elif source_lang == "Go":
         return _output_go(code_file_dir, file_name, input_content)
+    elif source_lang == "Javascript":
+        return _output_javascript(code_file_dir, file_name, input_content)
+    elif source_lang == "Rust":
+        return _output_rust(code_file_dir, file_name, input_content)
     
 
 def _compile_java(java_code_file_dir, java_file_name):
@@ -552,6 +824,43 @@ def _compile_go(go_code_file_dir, go_file_name):
     return Constants.COMPILATION_SUCCESS, ""
 
 
+def _compile_javascript(js_code_file_dir, js_file_name):
+    try:
+        subprocess.run(
+            "node --check " + js_code_file_dir + "/" + js_file_name,
+            check=True,
+            capture_output=True,
+            shell=True,
+            timeout=100
+        )
+    except subprocess.CalledProcessError as e:
+        if '# Token size exceeded.' in open(js_code_file_dir + "/" + js_file_name, 'r').read():
+            return Constants.TOKEN_LIMIT, ""
+        else:
+            return Constants.COMPILATION_ERROR, f"Compilation_Error: {e.stderr.decode()}"
+
+    return Constants.COMPILATION_SUCCESS, ""
+
+
+def _compile_rust(rust_code_file_dir, rust_file_name):
+    try:
+        subprocess.run(
+            "rustc " + rust_code_file_dir + "/" + rust_file_name + " -O -o exec_output",
+            check=True,
+            capture_output=True,
+            shell=True,
+            timeout=100
+        )
+    except subprocess.CalledProcessError as e:
+        if '# Token size exceeded.' in open(rust_code_file_dir + "/" + rust_file_name, 'r').read():
+            return Constants.TOKEN_LIMIT, ""
+        else:
+            return Constants.COMPILATION_ERROR, f"Compilation_Error: {e.stderr.decode()}"
+
+    return Constants.COMPILATION_SUCCESS, ""
+
+
+
 def compile(code_file_dir, file_name, source_lang):
     if source_lang == "Python":
         return _compile_python(code_file_dir, file_name)
@@ -563,3 +872,7 @@ def compile(code_file_dir, file_name, source_lang):
         return _compile_cpp(code_file_dir, file_name)
     elif source_lang == "Go":
         return _compile_go(code_file_dir, file_name)
+    elif source_lang == "Javascript":
+        return _compile_javascript(code_file_dir, file_name)
+    elif source_lang == "Rust":
+        return _compile_rust(code_file_dir, file_name)

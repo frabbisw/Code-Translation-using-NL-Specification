@@ -104,7 +104,7 @@ def test_avatar(source_lang, target_lang, report_dir, translation_dir, test_dir)
     #     print(f"Skipping translation from {source_lang} to {target_lang} as report is already present.")
     #     return
 
-    files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++"]]
+    files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++", "js", "rs"]]
     compile_failed = []
     compile_failed_dict = {}
     test_passed =[]
@@ -194,7 +194,7 @@ def test_codenet_intertrans(source_lang, target_lang, report_dir, translation_di
     #     print(f"Skipping translation from {source_lang} to {target_lang} as report is already present.")
     #     return
 
-    files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++"]]
+    files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++", "js", "rs"]]
     compile_failed = []
     compile_failed_dict = {}
     test_passed =[]
@@ -279,7 +279,7 @@ def test_codenet_intertrans(source_lang, target_lang, report_dir, translation_di
     remove_unnecessary_files(translation_dir)
 
 def test_codenet(source_lang, target_lang, report_dir, translation_dir, test_dir):
-    files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++"]]
+    files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++", "js", "rs"]]
     compile_failed = []
     compile_failed_dict = {}
     test_passed =[]
@@ -405,10 +405,10 @@ def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, targ
     # elif dataset == "evalplus":
     #     test_codenet(source, target, report_dir, translation_dir, test_dir)
 
-def translation_evaluation(dataset, source, target, translated_code_dir, report_dir, phase):
+def translation_evaluation(dataset, source, target, translated_code_dir, report_dir, phase, model):
     test_dir = f"{os.getcwd()}/dataset/{dataset}/{source}/TestCases"
     current_working_dir = os.getcwd()
-    temp_dir = f"{os.getcwd()}/temp_{dataset}_{source}_{target}"
+    temp_dir = f"{os.getcwd()}/temp_{model}_{dataset}_{source}_{target}"
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
     os.makedirs(temp_dir, exist_ok=True)
