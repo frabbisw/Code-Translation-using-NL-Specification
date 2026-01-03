@@ -134,7 +134,7 @@ class LocalCausalLMRunner:
             response = self.extract_code(response)            
             print("filtered")
             print("-"*100)
-            print(after)
+            print(response)
             print("="*100)
 
             return response
