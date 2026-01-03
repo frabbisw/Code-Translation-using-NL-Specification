@@ -1,7 +1,7 @@
 import os
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
+import gc
 
 class LocalCausalLMRunner:
     def __init__(self, model_path: str):
@@ -78,6 +78,7 @@ class LocalCausalLMRunner:
     # --------------------------------------------------
 
     def run(self, message, max_new_tokens=1024):
+        self.total_run += 1
         context_msg = ""
         user_msg = ""
 
@@ -103,17 +104,25 @@ class LocalCausalLMRunner:
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
-                max_new_tokens=max_new_tokens,
+                eos_token_id=self.tokenizer.eos_token_id,
                 pad_token_id=self.tokenizer.eos_token_id,
                 do_sample=False,
                 use_cache=False
             )
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
 
         response = self.tokenizer.decode(
             outputs[0],
             skip_special_tokens=True
         ).split("@@ Model's Response\n")[-1]
 
+        if self.total_run % 50 == 0:
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            gc.collect()
+        
         try:
             return self.extract_code(response)
         except Exception:
