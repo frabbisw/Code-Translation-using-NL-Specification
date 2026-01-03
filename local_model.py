@@ -5,6 +5,7 @@ import gc
 
 class LocalCausalLMRunner:
     def __init__(self, model_path: str):
+        self.total_run = 0
         self.model_path = model_path
         self.model_name = model_path.split("/")[-1]
 
