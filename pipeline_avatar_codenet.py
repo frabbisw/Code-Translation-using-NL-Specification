@@ -9,7 +9,7 @@ import translation_evaluation
 import all_errors_fixation
 
 if __name__ == "__main__":
-    f_ext = {"Python":"py", "Java": "java", "C++": "cpp", "C": "c", "Go": "go", "JavaScript": "js", "Rust": "rs"}
+    f_ext = {"Python":"py", "Java": "java", "C++": "cpp", "C": "c", "Go": "go", "Javascript": "js", "Rust": "rs"}
     
     ################################################################################
     # Argument Parser
