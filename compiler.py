@@ -4,6 +4,8 @@ import signal
 import os
 import Constants
 import re
+import shutil
+from pathlib import Path
 
 def compare_outputs(stdout: str, f_out: str, precision: int = 3) -> bool:
     def parse_and_round(s):
@@ -876,3 +878,68 @@ def compile(code_file_dir, file_name, source_lang):
         return _compile_javascript(code_file_dir, file_name)
     elif source_lang == "Rust":
         return _compile_rust(code_file_dir, file_name)
+    
+
+def compile_junit(jar_location, source_files):
+    junit_jar = f"{jar_location}/junit-4.13.2.jar"
+    hamcrest_jar = f"{jar_location}/hamcrest-core-1.3.jar"
+    temp_dir = f"{os.getcwd()}"
+
+    for file in source_files:
+        src = Path(file).resolve()
+        dst = (Path(temp_dir) / src.name).resolve()
+
+        if src == dst:
+            continue
+        shutil.copy(file, temp_dir)
+
+    compile_cmd = f"javac -cp {junit_jar}:{hamcrest_jar}"
+
+    for file in source_files:
+        compile_cmd = compile_cmd + f" {str(Path(file).name)}"
+
+    try:
+        subprocess.run(compile_cmd, check=True, capture_output=True, shell=True, timeout=100)
+    except subprocess.CalledProcessError as e:
+        return Constants.COMPILATION_ERROR, e.stderr.decode()
+
+    return Constants.COMPILATION_SUCCESS, None
+
+
+def run_junit(jar_location, source_files, test_file):
+    junit_jar = f"{jar_location}/junit-4.13.2.jar"
+    hamcrest_jar = f"{jar_location}/hamcrest-core-1.3.jar"
+    temp_dir = os.getcwd()
+
+    for file in source_files:
+        src = Path(file).resolve()
+        dst = (Path(temp_dir) / src.name).resolve()
+
+        if src == dst:
+            continue
+        shutil.copy(file, temp_dir)
+
+    compile_cmd = f"javac -cp {junit_jar}:{hamcrest_jar}"
+
+    for file in source_files:
+        compile_cmd = compile_cmd + f" {str(Path(file).name)}"
+
+    try:
+        subprocess.run(compile_cmd, check=True, capture_output=True, shell=True, timeout=100)
+    except subprocess.CalledProcessError as e:
+        print("==============================", e.stderr.decode(), "==============================", e.stdout.decode(), "==============================")
+    run_cmd = f"java -cp {junit_jar}:{hamcrest_jar}:{temp_dir} org.junit.runner.JUnitCore {str(Path(test_file).stem)}"
+    try:
+        result = subprocess.run(run_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, shell=True, timeout=20)
+    except subprocess.CalledProcessError as e:
+        out = (e.stdout or b"") + b"\n" + (e.stderr or b"")
+        text = out.decode(errors="replace")
+        if "java.lang.AssertionError" in text:
+            return Constants.TEST_MISMATCH, text
+        else:
+            return Constants.RUNTIME_ERROR, text
+    except subprocess.TimeoutExpired as e:
+        out = (e.stdout or b"") + b"\n" + (e.stderr or b"")
+        return Constants.INFINITE_LOOP, out.decode(errors="replace")
+
+    return Constants.TEST_PASSED, result.stdout.decode()

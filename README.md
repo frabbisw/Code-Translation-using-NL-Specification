@@ -27,9 +27,9 @@ dataset
 └─ ...
 ```
 
-## Run Pipeline For Avatar, CodeNet and CodenetIntertrans
+## Run Pipeline For avatar, codenet, codenetintertrans, and evalplus
 ```
-python pipeline_avatar_codenet.py --dataset dataset --source_lang source --target_lang target --model model --models_dir models_dir -nsb
+python pipeline.py --dataset dataset --source_lang source --target_lang target --model model --models_dir models_dir -nsb
 # model and models_dir are optional, default model is gpt-4o-mini, -n for NL_Spec Phase, -s for Source Phase, -b for both phase
 ```
 

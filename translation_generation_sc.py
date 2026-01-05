@@ -3,6 +3,7 @@ import logging
 import re
 from local_model import LocalCausalLMRunner
 import OpenAICall
+import utility
 
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/translation_generation_source.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -57,10 +58,9 @@ def translation_generation_sc(dataset, source, target, filename, model, model_na
         
         target_response = generate_translation_from_source(message, target, model)
 
-        if dataset == "evalplus":
-            target_response = "package com.example;\n" + target_response
-
         target_response = re.sub('public\s*class\s*.+', 'public class ' + file_basename + ' {', target_response)
+
+        target_response, _ = utility.remove_Tuple_class(utility.get_longest_code_snippet(target_response))
 
         target_file_dir = f"Generations/{model_name}/translation_source/{dataset}/{source}/{target}"
         os.makedirs(target_file_dir, exist_ok=True)

@@ -10,6 +10,10 @@ import pandas as pd
 import compiler
 import Constants
 import shutil
+import unit_test_converter
+import utility
+
+jar_location = "/home/soumit/jars"
 
 os.makedirs(f'logs', exist_ok=True)
 logging.basicConfig(filename=f"logs/translation_evaluation_repair.log", level=logging.INFO, format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -289,7 +293,6 @@ def test_codenet(source_lang, target_lang, report_dir, translation_dir, test_dir
     runtime_failed = []
     runtime_failed_details= []
     runtime_failed_dict = {}
-    # report_dir = f"LIT_Results/Reports/{dataset}/{source}/{target}"
     infinite_loop = []
     infinite_loop_dict = {}
 
@@ -339,71 +342,79 @@ def test_codenet(source_lang, target_lang, report_dir, translation_dir, test_dir
     generate_report(source_lang, target_lang, report_dir, "codenet", compile_failed, runtime_failed, test_failed, infinite_loop, infinite_loop_dict, test_passed, test_failed_dict, runtime_failed_dict, test_failed_details, runtime_failed_details, compile_failed_dict)
     remove_unnecessary_files(translation_dir)
 
-# def test_evalplus(source_lang, target_lang, report_dir, translation_dir, test_dir):
-#     files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++"]]
-#     compile_failed = []
-#     compile_failed_dict = {}
-#     test_passed =[]
-#     test_failed =[]
-#     test_failed_details = []
-#     test_failed_dict = {}
-#     runtime_failed = []
-#     runtime_failed_details= []
-#     runtime_failed_dict = {}
-#     infinite_loop = []
-#     infinite_loop_dict = {}
+def test_evalplus(source_lang, target_lang, report_dir, translation_dir, test_dir, temp_dir, root_dir):
+    files = [f for f in os.listdir(translation_dir) if f.split(".")[-1] in ["py", "java", "c", "cpp", "go", "c++"]]
+    compile_failed = []
+    compile_failed_dict = {}
+    test_passed =[]
+    test_failed =[]
+    test_failed_details = []
+    test_failed_dict = {}
+    runtime_failed = []
+    runtime_failed_details= []
+    runtime_failed_dict = {}
+    infinite_loop = []
+    infinite_loop_dict = {}
 
-#     desc = f"Running Codenet Tests for {source_lang} to {target_lang}"
-#     for i in tqdm(range(len(files)), desc = desc):
-#         if (not os.path.isfile(f"{translation_dir}/{files[i]}")):
-#             continue
+    desc = f"Running Evalplus Tests for {source_lang} to {target_lang}"
+    for i in tqdm(range(len(files)), desc = desc):
+        if (not os.path.isfile(f"{translation_dir}/{files[i]}")):
+            continue
         
-#         with open(test_dir+"/"+ files[i].split(".")[0]+".in" , 'r') as f:
-#             f_in = f.read()
-#         f_out = open(test_dir+"/"+ files[i].split(".")[0]+".out", "r").read()
+        translated_file = f"{translation_dir}/{files[i]}"
+        code_id = Path(translated_file).stem
+        source_file = f"{root_dir}/dataset/evalplus/{source_lang}/Code/{code_id}.py" # f"{translation_dir}/{files[i]}"
+        pytest_file = f"{test_dir}/{code_id}.txt"
+        test_info = unit_test_converter.infer_param_types_and_extract_test_info(source_file=source_file, test_file=pytest_file, temp_dir=temp_dir, root_dir=root_dir)
+        junit_file_content = unit_test_converter.convert(translated_file=translated_file, test_info=test_info)
+        junit_file = f"{os.getcwd()}/{code_id}Test.java"
 
-#         verdict, report, _ = compiler.test(translation_dir, files[i], f_in, f_out, target_lang)
+        with open(junit_file , 'w') as f:
+            print(junit_file_content, file=f)
+            f.close()
 
-#         if verdict == Constants.TEST_PASSED:
-#             test_passed.append(files[i])
-#         elif verdict == Constants.TEST_MISMATCH:
-#             test_failed.append(files[i])
-#             test_failed_details.append('Filename: '+files[i]+ ' ' + report)
-#             test_failed_dict[f"{files[i]}"] = f"{report}\n"
+        if utility.wait_for_file(junit_file):
+            compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java"])
+            if compile_success == Constants.COMPILATION_ERROR:
+                compile_failed.append(files[i])
+                compile_failed_dict[f"{files[i]}"] = f"{error_info}\n"
+            else:
+                source_files = [translated_file, f"{root_dir}/Tuple.java", junit_file]
+                verdict, report = compiler.run_junit(jar_location, source_files, junit_file)
+                if verdict == Constants.TEST_PASSED:
+                    test_passed.append(files[i])
+                elif verdict == Constants.RUNTIME_ERROR:
+                    runtime_failed.append(files[i])
+                    runtime_failed_details.append('Filename: '+ files[i]+ ' ' + report)
+                    runtime_failed_dict[f"{files[i]}"] = f"{report}\n"
+                elif verdict == Constants.TEST_MISMATCH:
+                    test_failed.append(files[i])
+                    test_failed_details.append('Filename: '+files[i]+ ' ' + report)
+                    test_failed_dict[f"{files[i]}"] = f"{report}\n"
+                elif verdict == Constants.INFINITE_LOOP:
+                    infinite_loop.append(files[i])
+                    infinite_loop_dict[f"{files[i]}"] = f"{report}\n"
 
-#         elif verdict == Constants.RUNTIME_ERROR:
-#             runtime_failed.append(files[i])
-#             runtime_failed_details.append('Filename: '+ files[i]+ ' ' + report)
-#             runtime_failed_dict[f"{files[i]}"] = f"{report}\n"
+    test_failed = list(set(test_failed))
+    test_failed_details = list(set(test_failed_details))
+    runtime_failed = list(set(runtime_failed))
+    runtime_failed_details = list(set(runtime_failed_details))
+    compile_failed = list(set(compile_failed))
+    infinite_loop = list(set(infinite_loop))
+    test_passed = list(set(test_passed))
 
-#         elif verdict == Constants.INFINITE_LOOP:
-#             infinite_loop.append(files[i])
-#             infinite_loop_dict[f"{files[i]}"] = f"{report}\n"
-            
-#         elif verdict == Constants.COMPILATION_ERROR:
-#             compile_failed.append(files[i])
-#             compile_failed_dict[f"{files[i]}"] = f"{report}\n"
+    generate_report(source_lang, target_lang, report_dir, "evalplus", compile_failed, runtime_failed, test_failed, infinite_loop, infinite_loop_dict, test_passed, test_failed_dict, runtime_failed_dict, test_failed_details, runtime_failed_details, compile_failed_dict)
+    remove_unnecessary_files(translation_dir)
 
-#     test_failed = list(set(test_failed))
-#     test_failed_details = list(set(test_failed_details))
-#     runtime_failed = list(set(runtime_failed))
-#     runtime_failed_details = list(set(runtime_failed_details))
-#     compile_failed = list(set(compile_failed))
-#     infinite_loop = list(set(infinite_loop))
-#     test_passed = list(set(test_passed))
-
-#     generate_report(source_lang, target_lang, report_dir, "codenet", compile_failed, runtime_failed, test_failed, infinite_loop, infinite_loop_dict, test_passed, test_failed_dict, runtime_failed_dict, test_failed_details, runtime_failed_details, compile_failed_dict)
-#     remove_unnecessary_files(translation_dir)
-
-def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, target):
+def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, target, temp_dir, root_dir):
     if dataset == "avatar":
         test_avatar(source, target, report_dir, translation_dir, test_dir)
     elif dataset == "codenet":
         test_codenet(source, target, report_dir, translation_dir, test_dir)
     if dataset == "codenetintertrans":
         test_codenet_intertrans(source, target, report_dir, translation_dir, test_dir)
-    # elif dataset == "evalplus":
-    #     test_codenet(source, target, report_dir, translation_dir, test_dir)
+    elif dataset == "evalplus":
+        test_evalplus(source, target, report_dir, translation_dir, test_dir, temp_dir, root_dir)
 
 def translation_evaluation(dataset, source, target, translated_code_dir, report_dir, phase, model):
     test_dir = f"{os.getcwd()}/dataset/{dataset}/{source}/TestCases"
@@ -415,7 +426,7 @@ def translation_evaluation(dataset, source, target, translated_code_dir, report_
     os.chdir(temp_dir)
     try:
         os.makedirs(report_dir, exist_ok=True)
-        evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target)
+        evaluation_code(dataset, translated_code_dir, test_dir, report_dir, source, target, temp_dir, current_working_dir)
     except Exception as e:
         print(f"Exception: Evaluation in phase ({phase}): \n\n {e}\n\n")
     finally:

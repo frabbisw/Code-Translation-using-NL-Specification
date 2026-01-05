@@ -38,7 +38,7 @@ if __name__ == "__main__":
     ################################################################################
     # Sanity Check of Inputs
     ################################################################################
-    if dataset not in ["avatar", "codenet", "codenetintertrans"]:
+    if dataset not in ["avatar", "codenet", "codenetintertrans", "evalplus"]:
         exit()
     source_dir = f"{os.getcwd()}/dataset/{dataset}/{source}/Code"
     if os.path.isdir(source_dir) == False:
