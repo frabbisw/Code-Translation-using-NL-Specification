@@ -172,3 +172,6 @@ translation/base_translation/gpt-4o-mini (copy)/
 logs/
 Repair/
 .vscode/
+Generations_structure.txt
+Repair_structure.txt
+folder_structure.py
