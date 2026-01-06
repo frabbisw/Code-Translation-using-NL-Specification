@@ -39,16 +39,21 @@ if __name__ == "__main__":
     # Sanity Check of Inputs
     ################################################################################
     if dataset not in ["avatar", "codenet", "codenetintertrans", "evalplus"]:
+        print(f"invalid dataset {dataset}")
         exit()
     source_dir = f"{os.getcwd()}/dataset/{dataset}/{source}/Code"
     if os.path.isdir(source_dir) == False:
+        print(f"invalid source_dir {source_dir}")
         exit()
     if target not in ["C", "C++", "Go", "Java", "Python", "Rust", "Javascript"]:
+        print(f"invalid target lang {target}")
         exit()
     if model not in ["starcoder", "magicoder"]:
         if "gpt" not in model and "deepseek" not in model:
+            print(f"invalid model")
             exit()
     if source == target:
+        print(f"source == target {target == source}")
         exit()
     print("Sanity Check of Inputs")
 
