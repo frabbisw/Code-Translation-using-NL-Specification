@@ -20,6 +20,8 @@ module load cuda/12.3.2
 module load anaconda/3.2024.10.1
 
 export PATH="$HOME/my-nodejs/bin:$PATH"
+export PATH="$HOME/rust/bin:$PATH"
+
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 eval "$(conda shell.bash hook)"
