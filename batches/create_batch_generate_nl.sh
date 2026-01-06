@@ -7,22 +7,29 @@ MODEL="magicoder"
 
 datasets=("avatar" "codenet" "codenetintertrans")
 
-target_languages=("C++" "C" "Java" "Go" "Python")
-
+# Dataset-specific language lists
 source_languages_avatar=("Java" "Python")
+target_languages_avatar=("C++" "C" "Java" "Go" "Python")
+
 source_languages_codenet=("C" "C++" "Go" "Python" "Java")
-source_languages_codenetintertrans=("C++" "Go" "Python" "Java")
+target_languages_codenet=("C" "C++" "Go" "Python" "Java")
+
+source_languages_codenetintertrans=("C++" "Go" "Python" "Java" "Javascript" "Rust")
+target_languages_codenetintertrans=("C++" "Go" "Python" "Java" "Javascript" "Rust")
 
 for dataset in "${datasets[@]}"; do
     case "$dataset" in
         avatar)
             source_languages=("${source_languages_avatar[@]}")
+            target_languages=("${target_languages_avatar[@]}")
             ;;
         codenet)
             source_languages=("${source_languages_codenet[@]}")
+            target_languages=("${target_languages_codenet[@]}")
             ;;
         codenetintertrans)
             source_languages=("${source_languages_codenetintertrans[@]}")
+            target_languages=("${target_languages_codenetintertrans[@]}")
             ;;
         *)
             echo "Unknown dataset: $dataset"
@@ -38,15 +45,9 @@ for dataset in "${datasets[@]}"; do
 
             output_file="generate_${dataset}_${src_lang}_${tgt_lang}.sh"
 
-            # Decide replacement for ########
-            sed_extra=()
-            # if [[ "$tgt_lang" == "C" || "$tgt_lang" == "C++" ]]; then
-            #     X=$((RANDOM % 4 + 1))
-            #     sed_extra+=(-e "s/########/#SBATCH -w virya${X}/g")
-            # fi
+            # Random node selection
             X=$((RANDOM % 4 + 1))
-            sed_extra+=(-e "s/########/#SBATCH -w virya${X}/g")
-
+            sed_extra=(-e "s/########/#SBATCH -w virya${X}/g")
 
             sed \
                 -e "s/##DATASET##/${dataset}/g" \
