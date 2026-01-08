@@ -21,7 +21,6 @@ module load anaconda/3.2024.10.1
 
 export PATH="$HOME/my-nodejs/bin:$PATH"
 export PATH="$HOME/rust/bin:$PATH"
-export SONAR_TOKEN=2b2da2926e0fee16fc61424a715325c5c7580b2e
 
 eval "$(conda shell.bash hook)"
 conda activate code_trans
