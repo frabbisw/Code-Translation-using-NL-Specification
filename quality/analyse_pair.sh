@@ -117,3 +117,6 @@ elif [[ "$TGT_LANG" == "Java" ]]; then
 else
     sonar_script "$DATA_PATH" "$OUT_PATH" "$ORG_NAME" "$PROJECT_KEY"
 fi
+
+sleep 5
+python download_missing.py "$src_dir" "$tgt_path" "$organization" "$project_key"
