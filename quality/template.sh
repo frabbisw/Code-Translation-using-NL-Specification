@@ -25,24 +25,17 @@ export PATH="$HOME/rust/bin:$PATH"
 eval "$(conda shell.bash hook)"
 conda activate code_trans
 
-bash analyse_pair MODEL=$1
-DATASET=$2
-TRANS_TYPE=$3
-GEN=$4
-ITR=$5
-SRC_LANG=$6
-TGT_LANG=$7
-ORG_NAME=$8
+bash set_token.sh
 
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_source Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_source Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_source Repair itr2 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_source Repair itr3 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair itr2 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair itr3 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
 
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl Repair itr2 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl Repair itr3 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair itr2 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair itr3 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
 
 bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl_and_source Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
 bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl_and_source Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
