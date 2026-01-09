@@ -109,6 +109,9 @@ sonar_script() {
 mkdir -p workspace
 rm -rf workspace/*
 
+echo "Analyzing with SonarQube"
+echo "$DATA_PATH"
+
 # Dispatch based on TGT_LANG
 if [[ "$TGT_LANG" == "C" || "$TGT_LANG" == "C++" ]]; then
     sonar_c_cpp "$DATA_PATH" "$OUT_PATH" "$ORG_NAME" "$PROJECT_KEY"
@@ -118,5 +121,6 @@ else
     sonar_script "$DATA_PATH" "$OUT_PATH" "$ORG_NAME" "$PROJECT_KEY"
 fi
 
+echo "waiting for 5 sec ..."
 sleep 5
 python download_missings.py "$DATA_PATH" "$OUT_PATH" "$ORG_NAME" "$PROJECT_KEY"
