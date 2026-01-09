@@ -54,7 +54,7 @@ sonar_c_cpp() {
   mkdir build
   cd build || exit
   cmake "$current_dir"/workspace
-  build-wrapper-linux-x86-64 --out-dir "$current_dir"/workspace/bw-output make -k
+  build-wrapper --out-dir "$current_dir"/workspace/bw-output make -k
   cd .. || exit
   sonar-scanner -Dsonar.scm.disabled=true -Dsonar.organization="$organization" -Dsonar.projectKey="$project_key" -Dsonar.sources=Code -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json -Dsonar.host.url=https://sonarcloud.io
   sleep 1
@@ -109,8 +109,15 @@ sonar_script() {
 mkdir -p workspace
 rm -rf workspace/*
 
+echo "==== SonarQube environment ===="
+echo "SONAR_HOME           = $SONAR_HOME"
+echo "SONAR_SCANNER_HOME   = $SONAR_SCANNER_HOME"
+echo "BUILD_WRAPPER_HOME   = $BUILD_WRAPPER_HOME"
+echo "PATH                 = $PATH"
+echo "=============================="
 echo "Analyzing with SonarQube"
 echo "$DATA_PATH"
+echo "=============================="
 
 # Dispatch based on TGT_LANG
 if [[ "$TGT_LANG" == "C" || "$TGT_LANG" == "C++" ]]; then
