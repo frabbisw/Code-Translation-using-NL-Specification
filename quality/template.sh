@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J ##MODEL####DATASET##_##SRC_LANG##_##TGT_LANG##_SONAR
+#SBATCH -J SONAR_##MODEL####DATASET##_##SRC_LANG##_##TGT_LANG##
 #SBATCH -n1
 #SBATCH --mem=30GB
 #SBATCH --gpus=0
