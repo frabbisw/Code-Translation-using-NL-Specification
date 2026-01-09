@@ -8,17 +8,22 @@ from requests.auth import HTTPBasicAuth
 from collections import Counter
 import sys
 
-directory = sys.argv[1]
-dataset = sys.argv[2]
-src_lang = sys.argv[3]
-target_lang = sys.argv[4]
-output_dir = sys.argv[5]
-organization = sys.argv[6]
+# directory = sys.argv[1]
+# dataset = sys.argv[2]
+# src_lang = sys.argv[3]
+# target_lang = sys.argv[4]
+# output_dir = sys.argv[5]
+# organization = sys.argv[6]
 
-os.makedirs(output_dir, exist_ok=True)
+src_dir = sys.argv[1]
+tgt_path = sys.argv[2]
+organization = sys.argv[3]
+project_key = sys.argv[4]
 
-print(f"Sonar API", f"Dataset: {dataset}", f"Source Language: {src_lang}",
-      f"Target Language: {target_lang}")
+# os.makedirs(output_dir, exist_ok=True)
+
+print(f"Sonar API", f"src_dir: {src_dir}", f"tgt_path: {tgt_path}",
+      f"organization: {organization}", f"project_key: {project_key}")
 # exit()
 # Get the SonarCloud token from the environment variable
 sonar_token = os.getenv('SONAR_TOKEN')
@@ -26,9 +31,6 @@ sonar_token = os.getenv('SONAR_TOKEN')
 # Check if the token is retrieved
 if not sonar_token:
     raise ValueError("The SONAR_TOKEN environment variable is not set.")
-
-# Replace with your project key
-project_key = f'{organization}_{dataset}_{src_lang}_{target_lang}'
 
 # API endpoint to search for issues
 url = 'https://sonarcloud.io/api/issues/search'
@@ -100,9 +102,9 @@ else:
     summary["ncloc"] = "N/A"
 
 print(f"SUMMARY: {summary}")
-with open(f"{output_dir}/summary_{dataset}_{src_lang}_{target_lang}_issues.json", "w") as f:
+with open(f"{tgt_path}_summary.json", "w") as f:
     json.dump(summary, f, indent=2)
-with open(f"{output_dir}/details_{dataset}_{src_lang}_{target_lang}_issues.json", "w") as f:
+with open(f"{tgt_path}_details.json", "w") as f:
     json.dump(total_issues, f, indent=2)
 
 print("-" * 50)
