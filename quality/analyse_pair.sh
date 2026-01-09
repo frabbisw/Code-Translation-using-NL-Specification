@@ -42,36 +42,43 @@ echo "Project Key: $PROJECT_KEY"
 echo "Data Path: $DATA_PATH"
 
 sonar_c_cpp() {
-  cd workspace || exit
   local src_dir=$1
   local tgt_path=$2
   local organization=$3
   local project_key=$4
+
+  local workspace_dir="workspace_${project_key}"
+  mkdir -p "$workspace_dir"
+  cd "$workspace_dir" || return 1 
+  
   mkdir "Code"
   cp -r "$src_dir"/* "Code/"
   find Code/ -maxdepth 1 -type f \( -name '*.c' -o -name '*.cpp' \) -exec bash -c 'ext="${1##*.}"; dir="$(dirname "$1")"; base="$(basename "$1" .$ext)"; mkdir -p "$dir/$base" && mv "$1" "$dir/$base/$base.$ext"' _ {} \;
   cp ../CMakeLists.txt .
   mkdir build
-  cd build || exit
-  cmake "$current_dir"/workspace
-  build-wrapper-linux-x86-64 --out-dir "$current_dir"/workspace/bw-output make -k
-  cd .. || exit
+  cd build || return 1
+  cmake "$current_dir"/"$workspace_dir"
+  build-wrapper-linux-x86-64 --out-dir "$current_dir"/"$workspace_dir"/bw-output make -k
+  cd .. || return 1
   sonar-scanner -Dsonar.scm.disabled=true -Dsonar.organization="$organization" -Dsonar.projectKey="$project_key" -Dsonar.sources=Code -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json -Dsonar.host.url=https://sonarcloud.io
   sleep 1
-  cd .. || exit
+  cd .. || return 1
   python get_info.py "$src_dir" "$tgt_path" "$organization" "$project_key"
   echo "Generated SONAR Report for $src_dir"
-  rm -r workspace/*
-  rm -r workspace/.scannerwork
+  rm -r "$workspace_dir"
   sleep 5
 }
 
 sonar_java() {
-  cd workspace || exit
   local src_dir=$1
   local tgt_path=$2
   local organization=$3
   local project_key=$4
+
+  local workspace_dir="workspace_${project_key}"
+  mkdir -p "$workspace_dir"
+  cd "$workspace_dir" || return 1 
+  
   mkdir "Code"
   cp -r "$src_dir"/* "Code/"
   find Code/ -maxdepth 1 -type f -name '*.java' -exec bash -c 'ext="${1##*.}"; dir="$(dirname "$1")"; base="$(basename "$1" .$ext)"; mkdir -p "$dir/$base" && mv "$1" "$dir/$base/$base.$ext"' _ {} \;
@@ -79,35 +86,33 @@ sonar_java() {
   find Code/ -type f -name "*.java" -exec bash -c 'java_file="{}"; class_file="${java_file%.java}.class"; [ ! -f "$class_file" ] && echo "Deleting $java_file" && rm "$java_file"' \;
   sonar-scanner -Dsonar.scm.disabled=true -Dsonar.organization="$organization" -Dsonar.projectKey="$project_key" -Dsonar.sources=Code -Dsonar.host.url=https://sonarcloud.io -Dsonar.java.binaries=Code
   sleep 1
-  cd .. || exit
+  cd .. || return 1
   python get_info.py "$src_dir" "$tgt_path" "$organization" "$project_key"
   echo "Generated SONAR Report for $src_dir"
-  rm -r workspace/*
-  rm -r workspace/.scannerwork
+  rm -r "$workspace_dir"
   sleep 5
 }
 
 sonar_script() {
-  cd workspace || exit
   local src_dir=$1
   local tgt_path=$2
   local organization=$3
   local project_key=$4
+
+  local workspace_dir="workspace_${project_key}"
+  mkdir -p "$workspace_dir"
+  cd "$workspace_dir" || return 1 
+  
   mkdir "Code"
   cp -r "$src_dir"/* "Code/"
   sonar-scanner -Dsonar.scm.disabled=true -Dsonar.organization="$organization" -Dsonar.projectKey="$project_key" -Dsonar.sources=Code -Dsonar.host.url=https://sonarcloud.io
   sleep 1
-  cd .. || exit
+  cd .. || return 1
   python get_info.py "$src_dir" "$tgt_path" "$organization" "$project_key"
   echo "Generated SONAR Report for $src_dir"
-  rm -r workspace/*
-  rm -r workspace/.scannerwork
+  rm -rf "$workspace_dir"
   sleep 5
 }
-
-# Ensure workspace is clean before starting
-mkdir -p workspace
-rm -rf workspace/*
 
 echo "==== SonarQube environment ===="
 echo "SONAR_HOME           = $SONAR_HOME"
