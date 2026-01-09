@@ -48,3 +48,20 @@ conda activate code_trans
 # -------------------------------
 bash set_token.sh
 echo "SONAR_TOKEN: $SONAR_TOKEN"
+
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair itr2 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair itr3 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair itr2 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair itr3 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+
+bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl_and_source Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl_and_source Repair itr1 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl_and_source Repair itr2 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash quality_analysis.sh ##MODEL## ##DATASET## translation_nl_and_source Repair itr3 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+
+
