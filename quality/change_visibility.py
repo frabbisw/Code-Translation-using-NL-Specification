@@ -10,6 +10,8 @@ if visibility not in ["public", "private"]:
   print("Visibility must be in public or private")
   visibility = "public"
 
+print(f"changing visibility to {visibility}")
+
 SONAR_TOKEN = os.environ.get("SONAR_TOKEN")
 if not SONAR_TOKEN:
     raise RuntimeError("SONAR_TOKEN environment variable not set")
