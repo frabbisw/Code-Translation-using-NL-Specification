@@ -44,7 +44,7 @@ for dataset in "${datasets[@]}"; do
                 continue
             fi
 
-            output_file="generate_${dataset}_${src_lang}_${tgt_lang}.sh"
+            output_file="sonar_${dataset}_${src_lang}_${tgt_lang}.sh"
 
             # Random node selection
             X=$((RANDOM % 4 + 1))
