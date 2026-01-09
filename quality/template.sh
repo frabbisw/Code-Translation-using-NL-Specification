@@ -10,9 +10,6 @@
 #SBATCH --mail-user=osdefr@gmail.com
 #######-
 
-# -------------------------------
-# Load environment modules
-# -------------------------------
 source /etc/profile.d/modules.sh
 
 module purge
@@ -25,28 +22,17 @@ module load cuda/12.3.2
 module load cmake/4.0.0
 module load anaconda/3.2024.10.1
 
-# -------------------------------
-# Protect system ncurses / bash
-# (prevents libtinfo.so warning)
-# -------------------------------
 export LD_LIBRARY_PATH=/usr/lib64:/lib64
-
-# -------------------------------
-# User-local tools
-# -------------------------------
 export PATH="$HOME/my-nodejs/bin:$PATH"
 export PATH="$HOME/rust/bin:$PATH"
-
-# -------------------------------
-# Activate conda safely
-# -------------------------------
 eval "$(conda shell.bash hook)"
 conda activate code_trans
 
-# -------------------------------
-# Sonar token setup
-# -------------------------------
-bash set_token.sh
+export SONAR_HOME="$HOME/sonar"
+export SONAR_SCANNER_HOME="$SONAR_HOME/sonar-scanner"
+export BUILD_WRAPPER_HOME="$SONAR_HOME/build-wrapper"
+export PATH="$SONAR_SCANNER_HOME/bin:$BUILD_WRAPPER_HOME:$PATH"
+source set_token.sh
 echo "SONAR_TOKEN: $SONAR_TOKEN"
 
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Generations itr0 ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
