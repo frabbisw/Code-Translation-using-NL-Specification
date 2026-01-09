@@ -4,7 +4,7 @@
 #SBATCH -n 1
 #SBATCH --mem=30GB
 #SBATCH --gpus=0
-#SBATCH --time=72:00:00
+#SBATCH --time=24:00:00
 #SBATCH -o _%x%J.out
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=osdefr@gmail.com
