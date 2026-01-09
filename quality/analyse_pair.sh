@@ -135,4 +135,7 @@ fi
 
 echo "waiting for 5 sec ..."
 sleep 5
+python change_visibility.py "$ORG_NAME" "$PROJECT_KEY" "public"
+sleep 5
+echo "waiting for 5 sec ..."
 python download_missings.py "$DATA_PATH" "$OUT_PATH" "$ORG_NAME" "$PROJECT_KEY"
