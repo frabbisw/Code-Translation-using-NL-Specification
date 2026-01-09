@@ -26,7 +26,7 @@ ORG_NAME=$8
 
 # 3. Construct PROJECT_KEY using ${lang_map[$VAR]}
 # In Bash, variables are concatenated just by placing them next to each other.
-PROJECT_KEY="${ORG_NAME}_${MODEL}_${DATASET}_${lang_map[$SRC_LANG]}_${lang_map[$TGT_LANG]}_${ITR}"
+PROJECT_KEY="${ORG_NAME}_${MODEL}_${DATASET}_${lang_map[$SRC_LANG]}_${lang_map[$TGT_LANG]}_${TRANS_TYPE}_${GEN}_${ITR}"
 
 if [[ "$GEN" == "Generations" ]]; then
   DATA_PATH="${project_dir}/Generations/${MODEL}/${TRANS_TYPE}/${DATASET}/${SRC_LANG}/${TGT_LANG}"
