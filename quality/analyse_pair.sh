@@ -119,4 +119,4 @@ else
 fi
 
 sleep 5
-python download_missing.py "$src_dir" "$tgt_path" "$organization" "$project_key"
+python download_missings.py "$src_dir" "$tgt_path" "$organization" "$project_key"
