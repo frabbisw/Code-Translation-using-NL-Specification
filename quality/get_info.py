@@ -22,8 +22,8 @@ project_key = sys.argv[4]
 
 # os.makedirs(output_dir, exist_ok=True)
 
-print(f"Sonar API", f"src_dir: {src_dir}", f"tgt_path: {tgt_path}",
-      f"organization: {organization}", f"project_key: {project_key}")
+print(f"Downloading info from sonarcloud... ", f"src_dir: {src_dir}", f"tgt_path: {tgt_path}", f"organization: {organization}", f"project_key: {project_key}")
+
 # exit()
 # Get the SonarCloud token from the environment variable
 sonar_token = os.getenv('SONAR_TOKEN')
