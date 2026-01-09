@@ -35,7 +35,7 @@ elif [[ "$GEN" == "Repair" ]]; then
 fi
 
 # 5. Define output path
-OUT_PATH="${project_dir}/sonar_report/${PROJECT_KEY}.json"
+OUT_PATH="${project_dir}/sonar_report/${PROJECT_KEY}"
 
 # Example of how to use the variables (verification)
 echo "Project Key: $PROJECT_KEY"
@@ -119,4 +119,4 @@ else
 fi
 
 sleep 5
-python download_missings.py "$src_dir" "$tgt_path" "$organization" "$project_key"
+python download_missings.py "$DATA_PATH" "$OUT_PATH" "$ORG_NAME" "$PROJECT_KEY"
