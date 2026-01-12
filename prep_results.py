@@ -2,20 +2,36 @@ import os
 import sys
 from pathlib import Path
 
-models = ["gpt4", "magicoder", "deepseek"]
-datasets = ["codenet", "avatar", "codenetintertrans"]
-trans_type = ["translation_nl", "translation_nl_and_source", "translation_source"]
-lang_map = {
+# =========================
+# Configuration
+# =========================
+
+MODELS = ["gpt4", "magicoder", "deepseek"]
+
+TRANS_TYPES = [
+    "translation_nl",
+    "translation_source",
+    "translation_nl_and_source",
+]
+
+DATASETS = [
+    "avatar",
+    "codenet",
+    "codenetintertrans",
+    "evalplus",
+]
+
+LANG_MAP = {
     "codenet": {
         "Python": ["C", "C++", "Java", "Go"],
         "Java": ["C", "C++", "Python", "Go"],
         "C": ["C++", "Java", "Python", "Go"],
         "C++": ["C", "Java", "Python", "Go"],
-        "Go": ["C", "C++", "Java", "Python"]
+        "Go": ["C", "C++", "Java", "Python"],
     },
     "avatar": {
+        "Python": ["Java"],
         "Java": ["Python"],
-        "Python": ["Java"]
     },
     "codenetintertrans": {
         "C++": ["Java", "Python", "Rust", "Go", "JavaScript"],
@@ -23,49 +39,86 @@ lang_map = {
         "Python": ["C++", "Java", "Rust", "Go", "JavaScript"],
         "Rust": ["C++", "Java", "Python", "Go", "JavaScript"],
         "Go": ["C++", "Java", "Python", "Rust", "JavaScript"],
-        "JavaScript": ["C++", "Java", "Python", "Rust", "Go"]
+        "JavaScript": ["C++", "Java", "Python", "Rust", "Go"],
     },
     "evalplus": {
-        "Python": ["Java"]
-    }
+        "Python": ["Java"],
+    },
 }
-lang_instances = {
-  "codenet": 200, 
-  "avatar": 240,
-  "codenetintertrans": 35,
-  "evalplus": 164,
-}
-def get_score_lang(filepath, total):
-  if not os.path.exists(file_path):
-    return -1
-  incorrects, corrects = 0, 0
-  with open(filepath, "r") as f:
-    lines = [l.strip() for l in f.readlines()]
-    for l in lines:
-      if l.startswith("Total Instances:"):
-        incorrects = int(l.split(":")[-1].strip())
-      elif l.startswith("Total Correct:")
-        corrects = int(l.split(":")[-1].strip())
-    return total - incorrects + corrects
+DATASET_INSTANCES = { "codenet": 200, "avatar": 240, "codenetintertrans": 35, "evalplus": 164, }
 
-for d in datasets:
-  for model in models:
-    for t in trans_type:
-      for sl in lang_map.keys():
-        number_of_target_langs = len(lang_map[d][sl])
-        sum_score = 0
-        for tl in lang_map[sl]:
-          tl_score = get_score_lang(f"Repair/{model}/{t}/itr3/Reports/{d}/{sl}/{tl}/{d}_compileReport_from_{sl}_to_{tl}.txt", lang_instances[d])
-          if tl_score < 0:
-            tl_score = get_score_lang(f"Repair/{model}/{t}/itr2/Reports/{d}/{sl}/{tl}/{d}_compileReport_from_{sl}_to_{tl}.txt", lang_instances[d])
-            if tl_score < 0:
-              tl_score = 0
-              number_of_target_langs -= 1
-        sum_score += tl_score
-        if number_of_target_langs > 0:
-          cell_score = round(100 * sum_score / (number_of_target_langs * lang_instances[d]), 2)
+# =========================
+# Placeholder (replace with your real function)
+# =========================
+
+def get_score_lang_pair(model, trans_type, dataset, src_lang):
+    return "NA"
+    total_per_lang = DATASET_INSTANCES[dataset]
+    n_tl = 0
+    total_corrects = 0
+    for tl in LANG_MAP[dataset][src_lang]:
+        file_path = f"Repair/{model}/{trans_type}/itr3/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
+        if os.path.exists(file_path):
+            n_tl += 1
+            with open(file_path, "r") as f:
+                lines = [l.strip() for l in f.readlines()]                        
+                for l in lines:
+                  if l.startswith("Total Instances:"):
+                    incorrects = int(l.split(":")[-1].strip())
+                  elif l.startswith("Total Correct:"):
+                    corrects = int(l.split(":")[-1].strip())
+                total_corrects += (total - incorrects + corrects)
         else:
-          cell_score = "NA"
-        print(d, model, t, sl, cell_score)
-        
-    
+            print("file not found", file_path)
+    return round(100 * total_corrects/(n_tl*total_per_lang), 2)
+            
+# =========================
+# LaTeX row generator
+# =========================
+
+def print_latex_row(dataset, src_lang, tgt_langs):
+    cells = []
+
+    # Dataset / Source / Targets
+    cells.append(dataset.capitalize() if dataset else "")
+    cells.append(src_lang)
+    cells.append(", ".join(tgt_langs))
+
+    # Model × Prompt source results
+    for model in MODELS:
+        for trans in TRANS_TYPES:
+            try:
+                score = get_score_lang_pair(
+                    model=model,
+                    trans_type=trans,
+                    dataset=dataset,
+                    src_lang=src_lang,
+                )
+                cells.append(f"{score:.2f}")
+            except Exception:
+                cells.append("--")
+
+    print(" & ".join(cells) + r" \\")
+
+
+# =========================
+# Main: emit table body
+# =========================
+
+def print_latex_table_body():
+    for dataset in DATASETS:
+        first_row = True
+
+        for src_lang, tgt_langs in LANG_MAP[dataset].items():
+            if first_row:
+                print_latex_row(dataset, src_lang, tgt_langs)
+                first_row = False
+            else:
+                # Empty dataset cell for visual grouping
+                print_latex_row("", src_lang, tgt_langs)
+
+        print(r"\midrule")
+
+
+if __name__ == "__main__":
+    print_latex_table_body()
