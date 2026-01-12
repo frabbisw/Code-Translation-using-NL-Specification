@@ -82,11 +82,11 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 
 # print(get_score_lang_pair("magicoder", "translation_source", "codenet", "Python"))
 
-import pdb
-pdb.set_trace()
+# import pdb
+# pdb.set_trace()
 
 
-exit(0)
+# exit(0)
 
 def print_latex_row(dataset, src_lang, tgt_langs):
     cells = []
@@ -108,7 +108,7 @@ def print_latex_row(dataset, src_lang, tgt_langs):
                 )
                 cells.append(f"{round(score,2)}")
             except Exception as e:
-                # print(f"\n{str(e)}\n")
+                print(f"\n{str(e)}\n")
                 cells.append("--")
 
     print(" & ".join(cells) + r" \\")
