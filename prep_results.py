@@ -88,11 +88,11 @@ import pdb
 
 # exit(0)
 
-def print_latex_row(dataset, src_lang, tgt_langs):
+def print_latex_row(dataset_key, dataset_cell, src_lang, tgt_langs):
     cells = []
 
-    # Dataset / Source / Targets
-    cells.append(dataset.capitalize() if dataset else "")
+    # Printed columns
+    cells.append(dataset_cell)
     cells.append(src_lang)
     cells.append(", ".join(tgt_langs))
 
@@ -103,21 +103,15 @@ def print_latex_row(dataset, src_lang, tgt_langs):
                 score = get_score_lang_pair(
                     model=model,
                     trans_type=trans,
-                    dataset=dataset,
+                    dataset=dataset_key,   # ALWAYS valid
                     src_lang=src_lang,
                 )
-                cells.append(f"{round(score,2)}")
-            except Exception as e:
-                print(e)
-                print(model, trans, dataset, src_lang)
-                pdb.set_trace()
+                cells.append(f"{score:.2f}")
+            except Exception:
                 cells.append("--")
-    # print(" & ".join(cells) + r" \\")
 
+    print(" & ".join(cells) + r" \\")
 
-# =========================
-# Main: emit table body
-# =========================
 
 def print_latex_table_body():
     for dataset in DATASETS:
@@ -125,11 +119,17 @@ def print_latex_table_body():
 
         for src_lang, tgt_langs in LANG_MAP[dataset].items():
             if first_row:
-                print_latex_row(dataset, src_lang, tgt_langs)
+                dataset_cell = dataset.capitalize()
                 first_row = False
             else:
-                # Empty dataset cell for visual grouping
-                print_latex_row("", src_lang, tgt_langs)
+                dataset_cell = ""   # visual grouping only
+
+            print_latex_row(
+                dataset_key=dataset,
+                dataset_cell=dataset_cell,
+                src_lang=src_lang,
+                tgt_langs=tgt_langs,
+            )
 
         print(r"\midrule")
 
