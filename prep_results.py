@@ -66,7 +66,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
                     incorrects = int(l.split(":")[-1].strip())
                   elif l.startswith("Total Correct:"):
                     corrects = int(l.split(":")[-1].strip())
-                total_corrects += (total - incorrects + corrects)
+                total_corrects += (total_per_lang - incorrects + corrects)
         else:
             # print("file not found", file_path)
             continue
