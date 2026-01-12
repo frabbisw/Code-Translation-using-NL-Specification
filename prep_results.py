@@ -96,7 +96,7 @@ def print_latex_row(dataset, src_lang, tgt_langs):
                 )
                 cells.append(f"{score:.2f}")
             except Exception as e:
-                print(f"\n{e}\n")
+                print(f"\n{str(e)}\n")
                 cells.append("--")
 
     print(" & ".join(cells) + r" \\")
