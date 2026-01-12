@@ -70,7 +70,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
         else:
             print("file not found", file_path)
     if n_tl < 1:
-        return "--"
+        return 0.0
     return round(100 * total_corrects/(n_tl*total_per_lang), 2)
             
 # =========================
