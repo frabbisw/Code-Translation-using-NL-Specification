@@ -52,7 +52,6 @@ DATASET_INSTANCES = { "codenet": 200, "avatar": 240, "codenetintertrans": 35, "e
 # =========================
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
-    return 1.00
     total_per_lang = DATASET_INSTANCES[dataset]
     n_tl = 0
     total_corrects = 0
@@ -70,6 +69,8 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
                 total_corrects += (total - incorrects + corrects)
         else:
             print("file not found", file_path)
+    if n_tl < 1:
+        return "--"
     return round(100 * total_corrects/(n_tl*total_per_lang), 2)
             
 # =========================
