@@ -97,7 +97,7 @@ def print_latex_row(dataset, src_lang, tgt_langs):
                 )
                 cells.append(f"{round(score,2)}")
             except Exception as e:
-                print(f"\n{str(e)}\n")
+                # print(f"\n{str(e)}\n")
                 cells.append("--")
 
     print(" & ".join(cells) + r" \\")
