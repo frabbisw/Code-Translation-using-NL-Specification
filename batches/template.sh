@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J starcoder_##DATASET##_##SRC_LANG##_##TGT_LANG##
+#SBATCH -J ##MODEL##_##DATASET##_##SRC_LANG##_##TGT_LANG##
 #SBATCH -n1
 #SBATCH --mem=60GB
 #SBATCH --gpus=2
