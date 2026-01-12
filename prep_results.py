@@ -52,7 +52,7 @@ DATASET_INSTANCES = { "codenet": 200, "avatar": 240, "codenetintertrans": 35, "e
 # =========================
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
-    return "1.00"
+    return 1.00
     total_per_lang = DATASET_INSTANCES[dataset]
     n_tl = 0
     total_corrects = 0
