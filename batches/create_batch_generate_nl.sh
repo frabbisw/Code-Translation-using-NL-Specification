@@ -3,7 +3,7 @@
 set -euo pipefail
 
 TEMPLATE_FILE="template.sh"
-MODEL="starcoder"
+MODEL=$1
 
 datasets=("avatar" "codenet" "codenetintertrans")
 
