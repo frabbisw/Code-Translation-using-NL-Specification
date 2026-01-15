@@ -357,56 +357,58 @@ def test_evalplus(source_lang, target_lang, report_dir, translation_dir, test_di
     infinite_loop_dict = {}
 
     desc = f"Running Evalplus Tests for {source_lang} to {target_lang}"
-    for i in tqdm(range(len(files)), desc = desc):
-        if (not os.path.isfile(f"{translation_dir}/{files[i]}")):
-            continue
+    with tqdm(range(len(files)), desc=desc) as pbar:
+        for i in pbar:
+            pbar.set_postfix(i=files[i])
+            if (not os.path.isfile(f"{translation_dir}/{files[i]}")):
+                continue
         
-        translated_file = f"{translation_dir}/{files[i]}"
-        code_id = Path(translated_file).stem
-        source_file = f"{root_dir}/dataset/evalplus/{source_lang}/Code/{code_id}.py" # f"{translation_dir}/{files[i]}"
-        pytest_file = f"{test_dir}/{code_id}.txt"
-        test_info = unit_test_converter.infer_param_types_and_extract_test_info(source_file=source_file, test_file=pytest_file, temp_dir=temp_dir, root_dir=root_dir)
-        junit_file_content = unit_test_converter.convert(translated_file=translated_file, test_info=test_info)
-        junit_file = f"{os.getcwd()}/{code_id}Test.java"
+            translated_file = f"{translation_dir}/{files[i]}"
+            code_id = Path(translated_file).stem
+            source_file = f"{root_dir}/dataset/evalplus/{source_lang}/Code/{code_id}.py" # f"{translation_dir}/{files[i]}"
+            pytest_file = f"{test_dir}/{code_id}.txt"
+            test_info = unit_test_converter.infer_param_types_and_extract_test_info(source_file=source_file, test_file=pytest_file, temp_dir=temp_dir, root_dir=root_dir)
+            junit_file_content = unit_test_converter.convert(translated_file=translated_file, test_info=test_info)
+            junit_file = f"{os.getcwd()}/{code_id}Test.java"
 
-        with open(junit_file , 'w') as f:
-            print(junit_file_content, file=f)
-            f.close()
+            with open(junit_file , 'w') as f:
+                print(junit_file_content, file=f)
+                f.close()
 
-        if utility.wait_for_file(junit_file):
-            compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java", junit_file])
-            if compile_success == Constants.COMPILATION_ERROR:
-                translated_file_compile_success, error_info = compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java"])
-                if translated_file_compile_success == Constants.COMPILATION_ERROR:
-                    compile_failed.append(files[i])
-                    compile_failed_dict[f"{files[i]}"] = f"{error_info}\n"
+            if utility.wait_for_file(junit_file):
+                compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java", junit_file])
+                if compile_success == Constants.COMPILATION_ERROR:
+                    translated_file_compile_success, error_info = compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java"])
+                    if translated_file_compile_success == Constants.COMPILATION_ERROR:
+                        compile_failed.append(files[i])
+                        compile_failed_dict[f"{files[i]}"] = f"{error_info}\n"
+                    else:
+                        pass
                 else:
-                    pass
-            else:
-                source_files = [translated_file, f"{root_dir}/Tuple.java", junit_file]
-                try:
-                    verdict, report = compiler.run_junit(jar_location, source_files, junit_file)
-                except Exception as e:
-                    verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
-                corresponding_tests = utility.extract_failed_junit_tests(report)
-                test_lines = "\nCorresponding Tests:\n"
-                test_content = utility.load_source_content(pytest_file)
-                for single_test in corresponding_tests:
-                    test_lines = test_lines + utility.get_single_test(test_content, single_test)
-                report = report + test_lines
-                if verdict == Constants.TEST_PASSED:
-                    test_passed.append(files[i])
-                elif verdict == Constants.RUNTIME_ERROR:
-                    runtime_failed.append(files[i])
-                    runtime_failed_details.append('Filename: '+ files[i]+ ' ' + report)
-                    runtime_failed_dict[f"{files[i]}"] = f"{report}\n"
-                elif verdict == Constants.TEST_MISMATCH:
-                    test_failed.append(files[i])
-                    test_failed_details.append('Filename: '+files[i]+ ' ' + report)
-                    test_failed_dict[f"{files[i]}"] = f"{report}\n"
-                elif verdict == Constants.INFINITE_LOOP:
-                    infinite_loop.append(files[i])
-                    infinite_loop_dict[f"{files[i]}"] = f"{report}\n"
+                    source_files = [translated_file, f"{root_dir}/Tuple.java", junit_file]
+                    try:
+                        verdict, report = compiler.run_junit(jar_location, source_files, junit_file)
+                    except Exception as e:
+                        verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
+                    corresponding_tests = utility.extract_failed_junit_tests(report)
+                    test_lines = "\nCorresponding Tests:\n"
+                    test_content = utility.load_source_content(pytest_file)
+                    for single_test in corresponding_tests:
+                        test_lines = test_lines + utility.get_single_test(test_content, single_test)
+                    report = report + test_lines
+                    if verdict == Constants.TEST_PASSED:
+                        test_passed.append(files[i])
+                    elif verdict == Constants.RUNTIME_ERROR:
+                        runtime_failed.append(files[i])
+                        runtime_failed_details.append('Filename: '+ files[i]+ ' ' + report)
+                        runtime_failed_dict[f"{files[i]}"] = f"{report}\n"
+                    elif verdict == Constants.TEST_MISMATCH:
+                        test_failed.append(files[i])
+                        test_failed_details.append('Filename: '+files[i]+ ' ' + report)
+                        test_failed_dict[f"{files[i]}"] = f"{report}\n"
+                    elif verdict == Constants.INFINITE_LOOP:
+                        infinite_loop.append(files[i])
+                        infinite_loop_dict[f"{files[i]}"] = f"{report}\n"
 
     test_failed = list(set(test_failed))
     test_failed_details = list(set(test_failed_details))
@@ -420,6 +422,15 @@ def test_evalplus(source_lang, target_lang, report_dir, translation_dir, test_di
     remove_unnecessary_files(translation_dir)
 
 def evaluation_code(dataset, translation_dir, test_dir, report_dir, source, target, temp_dir, root_dir):
+    rep_file =  Path(f"{report_dir}/{dataset}_compileReport_from_{source}_to_{target}.txt")
+    compile_error_file = Path(f"{report_dir}/{dataset}_compile_error_report_from_{source}_to_{target}.json")
+    runtime_error_file = Path(f"{report_dir}/{dataset}_runtime_error_report_from_{source}_to_{target}.json")
+    inf_loop_file = Path(f"{report_dir}/{dataset}_inf_loop_report_from_{source}_to_{target}.json")
+    test_fail_file = Path(f"{report_dir}/{dataset}_test_fail_report_from_{source}_to_{target}.json")
+
+    if rep_file.is_file() and compile_error_file.is_file() and runtime_error_file.is_file() and inf_loop_file.is_file() and test_fail_file.is_file():
+        return
+
     if dataset == "avatar":
         test_avatar(source, target, report_dir, translation_dir, test_dir)
     elif dataset == "codenet":

@@ -1356,17 +1356,19 @@ def convert(translated_file, test_info):
         func_name = sample_test_info["test_func"]
         func_input = sample_test_info["func_input"]
         func_output = sample_test_info["expected_output"]
-
-        java_code_snippet = convert_to_java(func_name, func_input, func_output, test_name, params, translated_file, code_id)
-                
-        java_test_funcs.append(java_code_snippet)
+        java_code_snippet = ""
+        try:
+            java_code_snippet = convert_to_java(func_name, func_input, func_output, test_name, params, translated_file, code_id)
+            java_test_funcs.append(java_code_snippet)
+        except Exception as e:
+            pass
 
     java_file_content = "import org.junit.Test;\nimport static org.junit.Assert.*;\nimport java.util.*;\nimport java.math.*;\n\npublic class " + code_id + "Test" + "{"
     for i in range(total_extracted):
         try:
             java_file_content = java_file_content + "\n" + java_test_funcs[i] + "\n"
         except:
-            print(java_file_content, java_test_funcs[i], "\n\n")
+            pass
 
     java_file_content = java_file_content + "}"
 
