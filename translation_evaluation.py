@@ -395,6 +395,7 @@ def test_evalplus(source_lang, target_lang, report_dir, translation_dir, test_di
                     test_content = utility.load_source_content(pytest_file)
                     for single_test in corresponding_tests:
                         test_lines = test_lines + utility.get_single_test(test_content, single_test)
+                        test_lines = utility.shorten_middle(test_lines)
                     report = report + test_lines
                     if verdict == Constants.TEST_PASSED:
                         test_passed.append(files[i])
