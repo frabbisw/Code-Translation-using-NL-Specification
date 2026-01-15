@@ -179,3 +179,4 @@ fix_test_converter.py
 add_package_all_file.py
 debug_temp_evalplus_test/
 temp_*/
+SonarQube_Ready_Artifacts/
