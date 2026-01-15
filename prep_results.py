@@ -47,17 +47,24 @@ LANG_MAP = {
 }
 DATASET_INSTANCES = { "codenet": 200, "avatar": 240, "codenetintertrans": 35, "evalplus": 164, }
 
-# =========================
-# Placeholder (replace with your real function)
-# =========================
+def get_file_path(model, trans_type, dataset, src_lang, tl, itr_num):
+    path3 = f"Repair/{model}/{trans_type}/itr3/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
+    path2 = f"Repair/{model}/{trans_type}/itr2/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
+    path1 = f"Repair/{model}/{trans_type}/itr1/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
+    path0 = f"Generations/{model}/{trans_type}/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
+
+    for path in [path3, path2, path1, path0]:
+        if os.path.exists(path):
+            return path
+    return None
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
     total_per_lang = DATASET_INSTANCES[dataset]
     n_tl = 0
     total_corrects = 0
     for tl in LANG_MAP[dataset][src_lang]:
-        file_path = f"Repair/{model}/{trans_type}/itr3/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
-        if os.path.exists(file_path):
+        file_path = get_file_path(model, trans_type, dataset, src_lang, tl, itr_num)
+        if file_path is not None:
             n_tl += 1
             with open(file_path, "r") as f:
                 lines = [l.strip() for l in f.readlines()]                        
