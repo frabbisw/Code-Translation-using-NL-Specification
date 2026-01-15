@@ -384,7 +384,10 @@ def test_evalplus(source_lang, target_lang, report_dir, translation_dir, test_di
                     pass
             else:
                 source_files = [translated_file, f"{root_dir}/Tuple.java", junit_file]
-                verdict, report = compiler.run_junit(jar_location, source_files, junit_file)
+                try:
+                    verdict, report = compiler.run_junit(jar_location, source_files, junit_file)
+                except Exception as e:
+                    verdict, report = Constants.RUNTIME_ERROR, f"Error_Type: {str(e)}"
                 corresponding_tests = utility.extract_failed_junit_tests(report)
                 test_lines = "\nCorresponding Tests:\n"
                 test_content = utility.load_source_content(pytest_file)
