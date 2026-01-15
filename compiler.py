@@ -934,7 +934,7 @@ def run_junit(jar_location, source_files, test_file):
     except subprocess.CalledProcessError as e:
         out = (e.stdout or b"") + b"\n" + (e.stderr or b"")
         text = out.decode(errors="replace")
-        if "java.lang.AssertionError" in text:
+        if "java.lang.AssertionError" in text or "java.lang.ComparisonFailure":
             return Constants.TEST_MISMATCH, text
         else:
             return Constants.RUNTIME_ERROR, text

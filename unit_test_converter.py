@@ -4,11 +4,10 @@ from fuzzywuzzy import fuzz
 import ast
 import time
 import os
-import determine_parameter_type
-import shutil
 import re
 from pathlib import Path
 from subprocess import Popen, PIPE
+import utility
 
 def load_source_content(source_file):
     content = None
@@ -85,6 +84,8 @@ def determine_python_list_elaborately(str_input):
                 return "list"
                 
             if all(isinstance(elem, list) for elem in parsed_list):
+                if all(all(isinstance(sub_elem, (int)) for sub_elem in elem) for elem in parsed_list):
+                    return "list[list[int]]"
                 if all(all(isinstance(sub_elem, (int, float)) for sub_elem in elem) for elem in parsed_list):
                     return "list[list[float]]"
                 return "list[list[object]]"
@@ -108,7 +109,7 @@ def determine_python_list_elaborately(str_input):
         return "Unknown"
         
 def convert_python_int_float_to_java_double(input):
-    if "." in input:
+    if "." in input or "e" in input:
         return input.strip()
     else:
         return input + ".0"
@@ -116,7 +117,9 @@ def convert_python_int_float_to_java_double(input):
 def convert_python_str_to_java_String(input):
     inp = str(input).strip()
     if inp.startswith("'") and inp.endswith("'") and len(str(inp)) > 2:
-        return "\"" + inp[1:(len(inp) - 1)] + "\""
+        s = inp[1:(len(inp) - 1)]
+        s = s.replace("\\", "\\\\")
+        return "\"" + s + "\""
     elif inp.startswith("'") and inp.endswith("'"):
         return "\"\""
     else:
@@ -241,6 +244,8 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
     inp_sentence = ""
     out_sentence = ""
     assert_inps = ""
+    incompatible_error = False
+    custom_error_message = ""
     for i in range(no_of_param):
         if i != no_of_param - 1:
             param_name_python = params[i][0]
@@ -324,6 +329,11 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     inp_sentence = inp_sentence + "\t\tdouble " + param_name_python + " = " + param_value_java + ";\n"
                 elif param_detail_java[i][1] == "Object":
                     inp_sentence = inp_sentence + "\t\tObject " + param_name_python + " = new Double(" + param_value_java + ");\n"
+                else:
+                    incompatible_error = True
+                    java_error_param_type = param_detail_java[i][1]
+                    java_error_param_name = param_detail_java[i][0]
+                    custom_error_message = f"Python func: {func_name}() accepts {param_type_python}, whereas Java func: {func_name_java}() accepts {java_error_param_type} for variable {java_error_param_name}; using Object type appropriately so that Java function can support multiple types might solve this issue"
                 assert_inps = assert_inps + param_name_python + ", "
 
             elif param_type_python == "int":
@@ -352,7 +362,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                 assert_inps = assert_inps + param_name_python + ", "
 
             elif param_type_python == "str":
-                param_value_java = param_value_python.replace("'", "").replace("\"","")
+                param_value_java = param_value_python.replace("'", "").replace("\"","").replace("\\", "\\\\")
                 if param_detail_java[i][1] == "Object":
                     inp_sentence = inp_sentence + "\t\tObject " + param_name_python + " = new String(\"" + param_value_java + "\");\n"
                 else:
@@ -457,6 +467,11 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<Double> " + param_name_python + " = List.of(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
+                else:
+                    incompatible_error = True
+                    java_error_param_type = param_detail_java[i][1]
+                    java_error_param_name = param_detail_java[i][0]
+                    custom_error_message = f"Python func: {func_name}() accepts {param_type_python}, whereas Java func: {func_name_java}() accepts {java_error_param_type} for variable {java_error_param_name}; using Object type appropriately so that Java function can support multiple types might solve this issue"
 
             elif param_type_python == "list[int]":
                 if param_detail_java[i][1] == "List<Object>":
@@ -471,7 +486,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             except:
                                 pass
                             element = str(element)
-                        elif type(element) == type(1.1):
+                        elif type(float(element)) == type(1.1):
                             try:
                                 if abs(float(element)) >= JAVA_DOUBLE_MAX:
                                     might_overflow = True
@@ -531,46 +546,34 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     param_value_java = ""
                     for elem_idx in range(len(all_elements_in_python_list)):
                         try:
-                            if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
+                            if all_elements_in_python_list[elem_idx].strip() != "False" and all_elements_in_python_list[elem_idx].strip() != "True" and abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
                                 might_overflow = True
                         except:
                             pass
-                        param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
+                        if all_elements_in_python_list[elem_idx].strip() == "False" or all_elements_in_python_list[elem_idx] == False: param_value_java = param_value_java + "0"
+                        elif all_elements_in_python_list[elem_idx].strip() == "True" or all_elements_in_python_list[elem_idx] == True: param_value_java = param_value_java + "1"
+                        else: param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
                         if elem_idx != len(all_elements_in_python_list) - 1:
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<Integer> " + param_name_python + " = List.of(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
 
-                if param_detail_java[i][1] == "int[]":
+                if param_detail_java[i][1] == "int[]" or param_detail_java[i][1] == "Integer[]":
                     param_value_python = param_value_python[1:(len(param_value_python) - 1)]
                     all_elements_in_python_list = param_value_python.strip().split(",")
                     param_value_java = ""
                     for elem_idx in range(len(all_elements_in_python_list)):
                         try:
-                            if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
+                            if all_elements_in_python_list[elem_idx].strip() != "False" and all_elements_in_python_list[elem_idx].strip() != "True" and abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
                                 might_overflow = True
                         except:
                             pass
-                        param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
+                        if all_elements_in_python_list[elem_idx].strip() == "False"  or all_elements_in_python_list[elem_idx] == False: param_value_java = param_value_java + "0"
+                        elif all_elements_in_python_list[elem_idx].strip() == "True"  or all_elements_in_python_list[elem_idx] == True: param_value_java = param_value_java + "1"
+                        else: param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
                         if elem_idx != len(all_elements_in_python_list) - 1:
                             param_value_java = param_value_java + ", "
-                    inp_sentence = inp_sentence + "\t\tint[] " + param_name_python + " = {" + param_value_java + "};\n"
-                    assert_inps = assert_inps + param_name_python + ", "
-
-                if param_detail_java[i][1] == "Integer[]":
-                    param_value_python = param_value_python[1:(len(param_value_python) - 1)]
-                    all_elements_in_python_list = param_value_python.strip().split(",")
-                    param_value_java = ""
-                    for elem_idx in range(len(all_elements_in_python_list)):
-                        try:
-                            if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
-                                might_overflow = True
-                        except:
-                            pass
-                        param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
-                        if elem_idx != len(all_elements_in_python_list) - 1:
-                            param_value_java = param_value_java + ", "
-                    inp_sentence = inp_sentence + "\t\tInteger[] " + param_name_python + " = {" + param_value_java + "};\n"
+                    inp_sentence = inp_sentence + "\t\t" + param_detail_java[i][1] + " " + param_name_python + " = {" + param_value_java + "};\n"
                     assert_inps = assert_inps + param_name_python + ", "
 
                 if param_detail_java[i][1] == "List<Double>":
@@ -588,31 +591,111 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<Double> " + param_name_python + " = List.of(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
-
-            elif param_type_python == "list[str]":
-                if param_detail_java[i][1] == "List<String>":
+                if param_detail_java[i][1] == "Double[]" or param_detail_java[i][1] == "double[]":
                     param_value_python = param_value_python[1:(len(param_value_python) - 1)]
                     all_elements_in_python_list = param_value_python.strip().split(",")
                     param_value_java = ""
                     for elem_idx in range(len(all_elements_in_python_list)):
-                        param_value_java = param_value_java + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx])
+                        try:
+                            if abs(float(convert_python_int_float_to_java_double(all_elements_in_python_list[elem_idx]))) >= JAVA_DOUBLE_MAX:
+                                might_overflow = True
+                        except:
+                            pass
+                        param_value_java = param_value_java + convert_python_int_float_to_java_double(all_elements_in_python_list[elem_idx])
+                        if elem_idx != len(all_elements_in_python_list) - 1:
+                            param_value_java = param_value_java + ", "
+                    inp_sentence = inp_sentence + "\t\t" + param_detail_java[i][1] + " " + param_name_python + " = {" + param_value_java + "};\n"
+                    assert_inps = assert_inps + param_name_python + ", "
+
+            elif param_type_python == "list[str]":
+                if param_detail_java[i][1] == "List<Object>":
+                    param_value_python = ast.literal_eval(param_value_python)
+                    param_value_java = ""
+                    for elem_idx in range(len(param_value_python)):
+                        element = param_value_python[elem_idx]
+                        if type(element) == type(1):
+                            try:
+                                if abs(float(element)) >= JAVA_INT_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            element = str(element)
+                        elif type(float(element)) == type(1.1):
+                            try:
+                                if abs(float(element)) >= JAVA_DOUBLE_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            element = str(element)
+                        elif type(element) == type("a"):
+                            element = "\"" + element + "\""
+                        elif type(element) == type(None):
+                            element = "null"
+                        elif type(element) == type(True):
+                            if element == False:
+                                element = str(0)
+                            else:
+                                element = str(1)
+                        elif type(element) == type([]):
+                            var_name = "__temp_arr" + str(i) + "__"
+                            inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
+                            for elem_idx in range(len(element)):
+                                if elem_idx != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx] + ", "
+                                else:
+                                    inp_sentence = inp_sentence + element[elem_idx]
+                            inp_sentence = inp_sentence + "};\n"
+                            element = var_name
+                        elif type(element) == type({}):
+                            var_name = "__temp_dict__"
+                            inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
+                            for key in list(element.keys()):
+                                inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
+                            element = "new HashMap<>(====XXXX====)"
+                        param_value_java = param_value_java + element
+                        if elem_idx != len(param_value_python) - 1:
+                            param_value_java = param_value_java + ", "
+                    inp_sentence = inp_sentence + "\t\tList<Object> " + param_name_python + " = Arrays.asList(" + param_value_java + ");\n"
+                    assert_inps = assert_inps + param_name_python + ", "
+                elif param_detail_java[i][1] == "List<String>":
+                    # param_value_python = param_value_python[1:(len(param_value_python) - 1)]
+                    all_elements_in_python_list = ast.literal_eval(param_value_python) # param_value_python.strip().split(",")
+                    param_value_java = ""
+                    for elem_idx in range(len(all_elements_in_python_list)):
+                        param_value_java = param_value_java + "\"" + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx]) + "\""
                         if elem_idx != len(all_elements_in_python_list) - 1:
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<String> " + param_name_python + " = Arrays.asList(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
-                elif param_detail_java[i][1] == "char[]":
-                    param_value_python = param_value_python[1:(len(param_value_python) - 1)]
-                    all_elements_in_python_list = param_value_python.strip().split(",")
+                elif param_detail_java[i][1] == "String[]":
+                    # param_value_python = param_value_python[1:(len(param_value_python) - 1)]
+                    all_elements_in_python_list = ast.literal_eval(param_value_python) # param_value_python.strip().split(",")
                     param_value_java = ""
                     for elem_idx in range(len(all_elements_in_python_list)):
-                        param_value_java = param_value_java + convert_python_str_to_java_Char_Array(all_elements_in_python_list[elem_idx])
+                        param_value_java = param_value_java + "\"" + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx]) + "\""
+                        if elem_idx != len(all_elements_in_python_list) - 1:
+                            param_value_java = param_value_java + ", "
+                    inp_sentence = inp_sentence + "\t\tString[] " + param_name_python + " = new String[]{" + param_value_java + "};\n"
+                    assert_inps = assert_inps + param_name_python + ", "
+                elif param_detail_java[i][1] == "char[]":
+                    # param_value_python = param_value_python[1:(len(param_value_python) - 1)]
+                    all_elements_in_python_list = ast.literal_eval(param_value_python) # param_value_python.strip().split(",")
+                    param_value_java = ""
+                    for elem_idx in range(len(all_elements_in_python_list)):
+                        param_value_java = param_value_java + "'" + convert_python_str_to_java_Char_Array(all_elements_in_python_list[elem_idx]) + "'"
                         if elem_idx != len(all_elements_in_python_list) - 1:
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tchar[] " + param_name_python + " = {" + param_value_java + "};\n"
                     assert_inps = assert_inps + param_name_python + ", "
+                else:
+                    incompatible_error = True
+                    java_error_param_type = param_detail_java[i][1]
+                    java_error_param_name = param_detail_java[i][0]
+                    custom_error_message = f"Python func: {func_name}() accepts {param_type_python}, whereas Java func: {func_name_java}() accepts {java_error_param_type} for variable {java_error_param_name}; using Object type appropriately so that Java function can support multiple types might solve this issue"
                 
             elif param_type_python == "list[object]":
                 if param_detail_java[i][1] == "List<Object>":
+                    incompatible_error = False
                     param_value_python = ast.literal_eval(param_value_python)
                     param_value_java = ""
                     for elem_idx in range(len(param_value_python)):
@@ -661,6 +744,13 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<Object> " + param_name_python + " = Arrays.asList(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
+                else:
+                    # should compose this test in a way that raises error with the message
+                    # Python accepts Object, Java only accepts {param_detail_java[i][1]}
+                    incompatible_error = True
+                    java_error_param_type = param_detail_java[i][1]
+                    java_error_param_name = param_detail_java[i][0]
+                    custom_error_message = f"Python func: {func_name}() accepts {param_type_python}, whereas Java func: {func_name_java}() accepts {java_error_param_type} for variable {java_error_param_name}; using Object type appropriately so that Java function can support multiple types might solve this issue"
 
             elif param_type_python == "list[list]":
                 if param_detail_java[i][1] == "int[][]":
@@ -692,12 +782,14 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         extra_added = False
                         for element in row:
                             try:
-                                if abs(float(element)) >= JAVA_INT_MAX:
+                                if element != "False" and element != "True" and abs(float(element)) >= JAVA_INT_MAX:
                                     might_overflow = True
                             except:
                                 pass
+                            if element == "False" or element == False: param_value_java = param_value_java + "0, "
+                            elif element == "True" or element == True: param_value_java = param_value_java + "1, "
+                            else: param_value_java = param_value_java = param_value_java + str(element) + ", "
                             extra_added = True
-                            param_value_java = param_value_java + str(element) + ", "
                         if extra_added: param_value_java = param_value_java[:-2] + "), "
                         else: param_value_java = param_value_java + "), "
 
@@ -706,35 +798,22 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     assert_inps = assert_inps + param_name_python + ", "
 
             elif param_type_python == "list":
-                if param_detail_java[i][1] == "int[]":
+                if param_detail_java[i][1] == "int[]" or param_detail_java[i][1] == "Integer[]":
                     param_value_python = param_value_python[1:(len(param_value_python) - 1)]
                     all_elements_in_python_list = param_value_python.strip().split(",")
                     param_value_java = ""
                     for elem_idx in range(len(all_elements_in_python_list)):
                         try:
-                            if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
+                            if all_elements_in_python_list[elem_idx].strip() != "False" and all_elements_in_python_list[elem_idx].strip() != "True" and abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
                                 might_overflow = True
                         except:
                             pass
-                        param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
+                        if all_elements_in_python_list[elem_idx].strip() == "False" or all_elements_in_python_list[elem_idx] == False: param_value_java = param_value_java + "0"
+                        elif all_elements_in_python_list[elem_idx].strip() == "True" or all_elements_in_python_list[elem_idx] == True: param_value_java = param_value_java + "1"
+                        else: param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
                         if elem_idx != len(all_elements_in_python_list) - 1:
                             param_value_java = param_value_java + ", "
-                    inp_sentence = inp_sentence + "\t\tint[] " + param_name_python + " = {" + param_value_java + "};\n"
-                    assert_inps = assert_inps + param_name_python + ", "
-                if param_detail_java[i][1] == "Integer[]":
-                    param_value_python = param_value_python[1:(len(param_value_python) - 1)]
-                    all_elements_in_python_list = param_value_python.strip().split(",")
-                    param_value_java = ""
-                    for elem_idx in range(len(all_elements_in_python_list)):
-                        try:
-                            if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
-                                might_overflow = True
-                        except:
-                            pass
-                        param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
-                        if elem_idx != len(all_elements_in_python_list) - 1:
-                            param_value_java = param_value_java + ", "
-                    inp_sentence = inp_sentence + "\t\tInteger[] " + param_name_python + " = {" + param_value_java + "};\n"
+                    inp_sentence = inp_sentence + "\t\t" + param_detail_java[i][1] + " " + param_name_python + " = {" + param_value_java + "};\n"
                     assert_inps = assert_inps + param_name_python + ", "
                 if param_detail_java[i][1] == "List<Integer>":
                     param_value_python = param_value_python[1:(len(param_value_python) - 1)]
@@ -742,25 +821,88 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     param_value_java = ""
                     for elem_idx in range(len(all_elements_in_python_list)):
                         try:
-                            if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
+                            if all_elements_in_python_list[elem_idx].strip() != "False" and all_elements_in_python_list[elem_idx].strip() != "True" and abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
                                 might_overflow = True
                         except:
                             pass
-                        param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
+                        if all_elements_in_python_list[elem_idx].strip() == "False"  or all_elements_in_python_list[elem_idx] == False: param_value_java = param_value_java + "0"
+                        elif all_elements_in_python_list[elem_idx].strip() == "True"  or all_elements_in_python_list[elem_idx] == True: param_value_java = param_value_java + "1"
+                        else: param_value_java = param_value_java + all_elements_in_python_list[elem_idx].strip()
                         if elem_idx != len(all_elements_in_python_list) - 1:
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<Integer> " + param_name_python + " = List.of(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
 
                 if param_detail_java[i][1] == "List<String>":
-                    param_value_python = param_value_python[1:(len(param_value_python) - 1)]
-                    all_elements_in_python_list = param_value_python.strip().split(",")
+                    # param_value_python = param_value_python[1:(len(param_value_python) - 1)]
+                    all_elements_in_python_list = ast.literal_eval(param_value_python) # param_value_python.strip().split(",")
                     param_value_java = ""
                     for elem_idx in range(len(all_elements_in_python_list)):
-                        param_value_java = param_value_java + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx])
+                        param_value_java = param_value_java + "\"" + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx]) + "\""
                         if elem_idx != len(all_elements_in_python_list) - 1:
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<String> " + param_name_python + " = Arrays.asList(" + param_value_java + ");\n"
+                    assert_inps = assert_inps + param_name_python + ", "
+                
+                if param_detail_java[i][1] == "String[]":
+                    # param_value_python = param_value_python[1:(len(param_value_python) - 1)]
+                    all_elements_in_python_list = ast.literal_eval(param_value_python) # param_value_python.strip().split(",")
+                    param_value_java = ""
+                    for elem_idx in range(len(all_elements_in_python_list)):
+                        param_value_java = param_value_java + "\"" + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx]) + "\""
+                        if elem_idx != len(all_elements_in_python_list) - 1:
+                            param_value_java = param_value_java + ", "
+                    inp_sentence = inp_sentence + "\t\tString[] " + param_name_python + " = new String[]{" + param_value_java + "};\n"
+                    assert_inps = assert_inps + param_name_python + ", "
+
+                if param_detail_java[i][1] == "List<Object>":
+                    param_value_python = ast.literal_eval(param_value_python)
+                    param_value_java = ""
+                    for elem_idx in range(len(param_value_python)):
+                        element = param_value_python[elem_idx]
+                        if type(element) == type(1):
+                            try:
+                                if abs(float(element)) >= JAVA_INT_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            element = str(element)
+                        elif type(float(element)) == type(1.1):
+                            try:
+                                if abs(float(element)) >= JAVA_DOUBLE_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            element = str(element)
+                        elif type(element) == type("a"):
+                            element = "\"" + element + "\""
+                        elif type(element) == type(None):
+                            element = "null"
+                        elif type(element) == type(True):
+                            if element == False:
+                                element = str(0)
+                            else:
+                                element = str(1)
+                        elif type(element) == type([]):
+                            var_name = "__temp_arr" + str(i) + "__"
+                            inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
+                            for elem_idx in range(len(element)):
+                                if elem_idx != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx] + ", "
+                                else:
+                                    inp_sentence = inp_sentence + element[elem_idx]
+                            inp_sentence = inp_sentence + "};\n"
+                            element = var_name
+                        elif type(element) == type({}):
+                            var_name = "__temp_dict__"
+                            inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
+                            for key in list(element.keys()):
+                                inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
+                            element = "new HashMap<>(====XXXX====)"
+                        param_value_java = param_value_java + element
+                        if elem_idx != len(param_value_python) - 1:
+                            param_value_java = param_value_java + ", "
+                    inp_sentence = inp_sentence + "\t\tList<Object> " + param_name_python + " = Arrays.asList(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
 
             elif param_type_python == "dict":
@@ -776,12 +918,12 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         put_sentence = put_sentence + "\t\tdict.put(__key_type__, __val_type__);\n"
                         if key_type == type(""):
                             put_sentence = put_sentence.replace("__key_type__", f"\"{convert_python_str_to_java_String(key)}\"")
-                        elif key_type == type(1):
+                        else:
                             put_sentence = put_sentence.replace("__key_type__", f"{key}")
                         
                         if val_type == type(""):
                             put_sentence = put_sentence.replace("__val_type__", f"\"{convert_python_str_to_java_String(val)}\"")
-                        elif val_type == type(1):
+                        else:
                             put_sentence = put_sentence.replace("__val_type__", f"{val}")
                         
                     inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + param_name_python + "= new HashMap<>();\n"
@@ -798,6 +940,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                 
 
         else:
+            python_ret_type = params[i][1]
             expected_output_java = ""
             if java_ret_type == "float":
                 expected_output_java = f"{func_output}F"
@@ -822,8 +965,8 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         might_overflow = True
                 except:
                     pass
-                if func_output == "False": expected_output_java = "0"
-                if func_output == "True": expected_output_java = "1"
+                if func_output == "False"  or func_output == False: expected_output_java = "0"
+                if func_output == "True"  or func_output == True: expected_output_java = "1"
                 out_sentence = out_sentence + "\t\tint expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "Integer":
                 expected_output_java = f"{func_output}"
@@ -832,9 +975,12 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         might_overflow = True
                 except:
                     pass
-                if func_output == "False": expected_output_java = "0"
-                if func_output == "True": expected_output_java = "1"
+                if func_output == "False" or func_output == False: expected_output_java = "0"
+                if func_output == "True" or func_output == True: expected_output_java = "1"
                 out_sentence = out_sentence + "\t\tInteger expected = " + "====XXXX====" + ";\n"
+            elif java_ret_type == "BigInteger":
+                expected_output_java = f"new BigInteger(\"{func_output}\")"
+                out_sentence = out_sentence + "\t\tBigInteger expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "Number":
                 func_output = ast.literal_eval(func_output)
                 try:
@@ -846,11 +992,11 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     expected_output_java = f"new Double({str(func_output)})"
                 elif type(func_output) == type(1):
                     expected_output_java = f"new Double({str(func_output)}.0)"
-                if func_output == "False": expected_output_java = "0"
-                if func_output == "True": expected_output_java = "1"
+                if func_output == "False" or func_output == False: expected_output_java = "0"
+                if func_output == "True" or func_output == True: expected_output_java = "1"
                 out_sentence = out_sentence + "\t\tNumber expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "long":
-                expected_output_java = f"{func_output}"
+                expected_output_java = f"{func_output}L"
                 try:
                     if abs(float(func_output)) >= JAVA_LONG_MAX:
                         might_overflow = True
@@ -867,16 +1013,32 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                 expected_output_java = func_output.replace("\"", "")
                 expected_output_java = f"'{expected_output_java}'"
                 out_sentence = out_sentence + "\t\tchar expected = " + "====XXXX====" + ";\n"
+            elif java_ret_type.startswith("Optional<String>"):
+                expected_output_java = "Optional.of("
+                expected_output_java = expected_output_java + convert_python_str_to_java_String(func_output)
+                expected_output_java = expected_output_java + ")"
+                out_sentence = out_sentence + f"\t\t{java_ret_type} expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "List<String>":
-                param_value_python = func_output[1:(len(func_output) - 1)]
-                all_elements_in_python_list = param_value_python.strip().split(",")
+                # param_value_python = func_output[1:(len(func_output) - 1)]
+                all_elements_in_python_list = ast.literal_eval(func_output) # param_value_python.strip().split(",")
                 expected_output_java = "Arrays.asList("
                 for elem_idx in range(len(all_elements_in_python_list)):
-                    expected_output_java = expected_output_java + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx])
+                    expected_output_java = expected_output_java + "\"" + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx]) + "\""
                     if elem_idx != len(all_elements_in_python_list) - 1:
                         expected_output_java = expected_output_java + ", "
-                out_sentence = out_sentence + "\t\tList<String> expected = " + "====XXXX====" + ");\n"
-            elif java_ret_type == "int[]":
+                expected_output_java = expected_output_java + ")"
+                out_sentence = out_sentence + "\t\tList<String> expected = " + "====XXXX====" + ";\n"
+            elif java_ret_type == "String[]":
+                # param_value_python = func_output[1:(len(func_output) - 1)]
+                all_elements_in_python_list = ast.literal_eval(func_output) # param_value_python.strip().split(",")
+                expected_output_java = "new String[]{"
+                for elem_idx in range(len(all_elements_in_python_list)):
+                    expected_output_java = expected_output_java + "\"" + convert_python_str_to_java_String(all_elements_in_python_list[elem_idx]) + "\""
+                    if elem_idx != len(all_elements_in_python_list) - 1:
+                        expected_output_java = expected_output_java + ", "
+                expected_output_java = expected_output_java + "}"
+                out_sentence = out_sentence + "\t\tString[] expected = " + "====XXXX====" + ";\n"
+            elif java_ret_type == "int[]" or java_ret_type == "Integer[]":
                 param_value_python = func_output[1:(len(func_output) - 1)]
                 all_elements_in_python_list = param_value_python.strip().split(",")
                 expected_output_java = "{"
@@ -889,22 +1051,9 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     expected_output_java = expected_output_java + all_elements_in_python_list[elem_idx].strip()
                     if elem_idx != len(all_elements_in_python_list) - 1:
                         expected_output_java = expected_output_java + ", "
-                out_sentence = out_sentence + "\t\tint[] expected = " + "====XXXX====" + "};\n"
-            elif java_ret_type == "Integer[]":
-                param_value_python = func_output[1:(len(func_output) - 1)]
-                all_elements_in_python_list = param_value_python.strip().split(",")
-                expected_output_java = "{"
-                for elem_idx in range(len(all_elements_in_python_list)):
-                    try:
-                        if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
-                            might_overflow = True
-                    except:
-                        pass
-                    expected_output_java = expected_output_java + all_elements_in_python_list[elem_idx].strip()
-                    if elem_idx != len(all_elements_in_python_list) - 1:
-                        expected_output_java = expected_output_java + ", "
-                out_sentence = out_sentence + "\t\tInteger[] expected = " + "====XXXX====" + "};\n"
-            elif java_ret_type == "double[]":
+                expected_output_java = expected_output_java + "}"
+                out_sentence = out_sentence + "\t\t" + java_ret_type + " expected = " + "====XXXX====" + ";\n"
+            elif java_ret_type == "double[]" or java_ret_type == "Double[]":
                 param_value_python = func_output[1:(len(func_output) - 1)]
                 all_elements_in_python_list = param_value_python.strip().split(",")
                 expected_output_java = "{"
@@ -917,7 +1066,8 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     expected_output_java = expected_output_java + all_elements_in_python_list[elem_idx].strip()
                     if elem_idx != len(all_elements_in_python_list) - 1:
                         expected_output_java = expected_output_java + ", "
-                out_sentence = out_sentence + "\t\tdouble[] expected = " + "====XXXX====" + "};\n"
+                expected_output_java = expected_output_java + "}"
+                out_sentence = out_sentence + "\t\t" + java_ret_type + " expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "char[]":
                 param_value_python = func_output[1:(len(func_output) - 1)]
                 all_elements_in_python_list = param_value_python.strip().split(",")
@@ -926,7 +1076,8 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     expected_output_java = expected_output_java + convert_python_str_to_java_Char_Array(all_elements_in_python_list[elem_idx].strip())
                     if elem_idx != len(all_elements_in_python_list) - 1:
                         expected_output_java = expected_output_java + ", "
-                out_sentence = out_sentence + "\t\tchar[] expected = " + "====XXXX====" + "};\n"
+                expected_output_java = expected_output_java + "}"
+                out_sentence = out_sentence + "\t\tchar[] expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "List<Double>":
                 param_value_python = func_output[1:(len(func_output) - 1)]
                 all_elements_in_python_list = param_value_python.strip().split(",")
@@ -940,7 +1091,8 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     expected_output_java = expected_output_java + convert_python_int_float_to_java_double(all_elements_in_python_list[elem_idx].strip())
                     if elem_idx != len(all_elements_in_python_list) - 1:
                         expected_output_java = expected_output_java + ", "
-                out_sentence = out_sentence + "\t\tList<Double> expected = " + "====XXXX====" + ");\n"
+                expected_output_java = expected_output_java + ")"
+                out_sentence = out_sentence + "\t\tList<Double> expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "List<Integer>":
                 param_value_python = func_output[1:(len(func_output) - 1)]
                 all_elements_in_python_list = param_value_python.strip().split(",")
@@ -949,12 +1101,16 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     try:
                         if abs(float(all_elements_in_python_list[elem_idx].strip())) >= JAVA_INT_MAX:
                             might_overflow = True
+                        abs(int(all_elements_in_python_list[elem_idx].strip()))
                     except:
-                        pass
+                        incompatible_error = True
+                        java_error_param_type = java_ret_type
+                        custom_error_message = f"Python func: {func_name}() returns {python_ret_type}, whereas Java func: {func_name_java}() returns {java_error_param_type}; using Object type appropriately so that Java function can support multiple types might solve this issue"
                     expected_output_java = expected_output_java + all_elements_in_python_list[elem_idx].strip()
                     if elem_idx != len(all_elements_in_python_list) - 1:
                         expected_output_java = expected_output_java + ", "
-                out_sentence = out_sentence + "\t\tList<Integer> expected = " + "====XXXX====" + ");\n"
+                expected_output_java = expected_output_java + ")"
+                out_sentence = out_sentence + "\t\tList<Integer> expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "List<int[]>":
                 if params[i][1] == "list[tuple]":
                     func_output = ast.literal_eval(func_output)
@@ -968,8 +1124,12 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             try:
                                 if abs(float(item1)) >= JAVA_INT_MAX or abs(float(item2)) >= JAVA_INT_MAX:
                                     might_overflow = True
+                                abs(int(item1))
+                                abs(int(item2))
                             except:
-                                pass
+                                incompatible_error = True
+                                java_error_param_type = java_ret_type
+                                custom_error_message = f"Python func: {func_name}() returns {python_ret_type}, whereas Java func: {func_name_java}() returns {java_error_param_type}; using Object type appropriately so that Java function can support multiple types might solve this issue"
                             expected_output_java = expected_output_java + "new int[]{" + str(item1) + ", " + str(item2) + "}, "
                     if extra_added: expected_output_java = expected_output_java[:-2] + ")"
                     else: expected_output_java = expected_output_java + ")"
@@ -1049,21 +1209,26 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
             out_sentence = out_sentence.replace("====XXXX====", expected_output_java)
 
     assert_inps = assert_inps[:-2]
-    if java_ret_type == "float" or java_ret_type == "double":
-        test_str = test_str + inp_sentence + out_sentence + "\t\tassertEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + "), 0.00001" + ");" + "\n\t}"
-    elif java_ret_type == "int[]" or java_ret_type == "char[]":
-        test_str = test_str + inp_sentence + out_sentence + "\t\tassertArrayEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + ")" + ");" + "\n\t}"
-    elif java_ret_type == "double[]":
-        test_str = test_str + inp_sentence + out_sentence + "\t\tassertArrayEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + "), 0.00001" + ");" + "\n\t}"
-    elif java_ret_type == "Tuple<Integer, Integer>" or java_ret_type == "Tuple":
-        test_str = test_str + inp_sentence + out_sentence + "\t\tassertEquals(expected.x, " + code_id + "." + func_name_java + "(" + assert_inps + ").x);\n" + "\t\tassertEquals(expected.y, " + code_id + "." + func_name_java + "(" + assert_inps + ").y" + ");" + "\n\t}"
+    if incompatible_error:
+        test_str = test_str + "\t\t" + f"fail(\"Incompatible Python Test: {test_name}:self.assertEqual({utility.shorten_middle(func_output)}, {func_name}({utility.shorten_middle(func_input)})); {custom_error_message}\");" + "\n\t}"
+    elif might_overflow:
+        test_str = test_str + "\t\t" + f"fail(\"Java Variable Overflow Issue for Python Test: {test_name}:self.assertEqual({utility.shorten_middle(func_output)}, {func_name}({utility.shorten_middle(func_input)})); using bigger data types in Java might help\");" + "\n\t}"
     else:
-        test_str = test_str + inp_sentence + out_sentence + "\t\tassertEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + ")" + ");" + "\n\t}"
+        if java_ret_type == "float" or java_ret_type == "double":
+            test_str = test_str + inp_sentence + out_sentence + "\t\tassertEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + "), 0.00001" + ");" + "\n\t}"
+        elif java_ret_type == "int[]" or java_ret_type == "char[]":
+            test_str = test_str + inp_sentence + out_sentence + "\t\tassertArrayEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + ")" + ");" + "\n\t}"
+        elif java_ret_type == "double[]":
+            test_str = test_str + inp_sentence + out_sentence + "\t\tassertArrayEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + "), 0.00001" + ");" + "\n\t}"
+        elif java_ret_type == "Tuple<Integer, Integer>" or java_ret_type == "Tuple":
+            test_str = test_str + inp_sentence + out_sentence + "\t\tassertEquals(expected.x, " + code_id + "." + func_name_java + "(" + assert_inps + ").x);\n" + "\t\tassertEquals(expected.y, " + code_id + "." + func_name_java + "(" + assert_inps + ").y" + ");" + "\n\t}"
+        else:
+            test_str = test_str + inp_sentence + out_sentence + "\t\tassertEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + ")" + ");" + "\n\t}"
+    
+    if len(test_str) < 2000:
+        return test_str
 
-    if might_overflow:
-        test_str = "\t/*\n" + test_str + "\n\t*/"
-
-    return test_str
+    return ""
 
 def convert(translated_file, test_info):
     code_id = Path(translated_file).stem
@@ -1092,7 +1257,7 @@ def convert(translated_file, test_info):
                 
         java_test_funcs.append(java_code_snippet)
 
-    java_file_content = "import org.junit.Test;\nimport static org.junit.Assert.*;\nimport java.util.*;\n\npublic class " + code_id + "Test" + "{"
+    java_file_content = "import org.junit.Test;\nimport static org.junit.Assert.*;\nimport java.util.*;\nimport java.math.*;\n\npublic class " + code_id + "Test" + "{"
     for i in range(total_extracted):
         try:
             java_file_content = java_file_content + "\n" + java_test_funcs[i] + "\n"
@@ -1110,17 +1275,17 @@ def infer_param_types_and_extract_test_info(source_file, test_file, root_dir, te
     infer_type_file_content = load_source_content(f"{root_dir}/determine_parameter_type.py")
     source_file_content = load_source_content(source_file)
     new_file_content = infer_type_file_content + "\n\n" + source_file_content
-    extraction_res, extraction_details = get_test_details(get_single_test(test_content, "test_0"))
+    extraction_res, extraction_details = get_test_details(get_single_test(test_content, "test_1"))
     code_id = Path(source_file).stem
     current_test_file = f"{temp_dir}/infer_type_{code_id}.py"
     params = ""
     if extraction_res:
         func_name = extraction_details["test_func"]
         func_input = extraction_details["func_input"]
-        new_file_content = new_file_content + "\n\n" + "dir = \"" + temp_dir + "/infered_type_" + code_id + ".txt\"\n" + "with open(dir, \"w\") as f:\n"
-        new_file_content = new_file_content + "\n    inferred_types = infer_types_at_runtime(" + func_name + "," + func_input + ")\n    " + "for i in range(len(inferred_types)):\n        print(f\"{inferred_types[i][0]}: {inferred_types[i][1]}\", file=f)"
-        new_file_content = new_file_content + "\n    ret_type = infer_return_type(" + func_name + "," + func_input + ")\n    print(f\"return: {ret_type}\", file=f)\n"
-        new_file_content = new_file_content + "    f.close()\n"
+        new_file_content = new_file_content + "\n\n" + "dir = \"" + temp_dir + "/infered_type_" + code_id + ".txt\"\n" + "with open(dir, \"w\") as __f__:\n"
+        new_file_content = new_file_content + "\n    inferred_types = infer_types_at_runtime(" + func_name + "," + func_input + ")\n    " + "for i in range(len(inferred_types)):\n        print(f\"{inferred_types[i][0]}: {inferred_types[i][1]}\", file=__f__)"
+        new_file_content = new_file_content + "\n    ret_type = infer_return_type(" + func_name + "," + func_input + ")\n    print(f\"return: {ret_type}\", file=__f__)\n"
+        new_file_content = new_file_content + "    __f__.close()\n"
 
         with open(current_test_file, "w") as f:
             print(new_file_content, file=f)

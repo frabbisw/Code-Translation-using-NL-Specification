@@ -41,8 +41,8 @@ def get_longest_code_snippet(text):
         return None
     return max(code_snippets, key=len)
 
-def remove_Tuple_class(code_snippet):
-    index = code_snippet.find("class Tuple")
+def remove_class(code_snippet, class_name):
+    index = code_snippet.find(class_name)
     if index != -1:
 
         prev_part = code_snippet[:index]
@@ -74,6 +74,26 @@ def remove_Tuple_class(code_snippet):
         return code_snippet, False
 
 
+def remove_Tuple_class(code_snippet, main_class_name):
+    matches = list(re.finditer(r'\bclass\s+(\w+)', code_snippet))
+
+    new_code = code_snippet
+    removed = False
+
+    for m in matches:
+        class_name = m.group(1)
+
+        # skip main class
+        if class_name != main_class_name:
+            new_code, removed = remove_class(new_code, f"class {class_name}")
+            cn = re.escape(class_name)
+            new_code = re.sub(rf'\b{cn}\s*<', 'Tuple<', new_code)
+            new_code = re.sub(rf'\bnew\s+{cn}\b', 'new Tuple', new_code)
+            new_code = re.sub(rf'\b{cn}\b', 'Tuple', new_code)
+        
+    return new_code, removed
+
+
 def wait_for_file(filepath, timeout=10):
     start_time = time.time()
     while time.time() - start_time < timeout:
@@ -87,3 +107,53 @@ def classify_junit_output_simple(output: str) -> str:
     if "java.lang.AssertionError" in output:
         return Constants.TEST_MISMATCH
     return Constants.RUNTIME_ERROR
+
+
+def extract_failed_junit_tests(junit_output):
+    pattern = re.compile(r"\d+\)\s+([a-zA-Z_][a-zA-Z0-9_]*)\(")
+    return pattern.findall(junit_output)
+
+def get_single_test(tests_str: str, test_name: str):
+    for line in tests_str.splitlines():
+        line = line.strip()
+        if line.startswith(f"{test_name}:"):
+            return line
+    return None
+
+def load_source_content(source_file):
+    content = None
+    with open(source_file, "r") as f:
+        content = f.read()
+        f.close()
+    return content
+
+def normalize_java_util(response: str) -> str:
+    # 1) Add "import java.util.*;" if missing (put it after package line if any)
+    if not re.search(r'^\s*import\s+java\.util\.\*;\s*$', response, flags=re.MULTILINE):
+        if re.search(r'^\s*package\s+[\w.]+;\s*$', response, flags=re.MULTILINE):
+            response = re.sub(
+                r'^(\s*package\s+[\w.]+;\s*)$',
+                r'\1\nimport java.util.*;',
+                response,
+                flags=re.MULTILINE
+            )
+        else:
+            response = "import java.util.*;\n" + response
+
+    # 2) De-qualify common java.util types (add more if you see them)
+    util_types = [
+        "Map", "Set", "List", "ArrayList", "HashMap", "HashSet",
+        "LinkedHashMap", "LinkedHashSet", "TreeMap", "TreeSet",
+        "Deque", "ArrayDeque", "Queue", "PriorityQueue",
+        "Collections", "Arrays", "Optional"
+    ]
+    pattern = r'\bjava\.util\.(?:' + "|".join(map(re.escape, util_types)) + r')\b'
+    response = re.sub(pattern, lambda m: m.group(0).split(".")[-1], response)
+
+    return response
+
+
+def shorten_middle(s: str, keep: int = 250) -> str:
+    if len(s) <= 2 * keep:
+        return s
+    return s[:keep] + "..." + s[-keep:]

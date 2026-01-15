@@ -67,7 +67,9 @@ def translation_generation_nl_sc(dataset, source, target, filename, model, model
 
         target_response = re.sub('public\s*class\s*.+', 'public class ' + file_basename + ' {', target_response)
 
-        target_response, _ = utility.remove_Tuple_class(utility.get_longest_code_snippet(target_response))
+        target_response = utility.normalize_java_util(target_response)
+
+        target_response, _ = utility.remove_Tuple_class(utility.get_longest_code_snippet(target_response, file_basename))
 
         target_file_dir = f"Generations/{model_name}/translation_nl_and_source/{dataset}/{source}/{target}"
         os.makedirs(target_file_dir, exist_ok=True)
