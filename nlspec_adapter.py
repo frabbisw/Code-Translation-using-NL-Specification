@@ -61,8 +61,8 @@ if __name__ == "__main__":
     src_dataset = sys.argv[3]
     src_lang = sys.argv[4]
 
-    model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b"}
-    if model in ["starcoder", "magicoder"]:
+    model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b", "llama": "CodeLlama-7b-Instruct-hf"}
+    if model in ["starcoder", "magicoder", "llama"]:
         model = LocalCausalLMRunner(f"{model_dir}/{model_map[model]}")
     else:
         load_dotenv()

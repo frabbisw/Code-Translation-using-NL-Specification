@@ -48,7 +48,7 @@ if __name__ == "__main__":
     if target not in ["C", "C++", "Go", "Java", "Python", "Rust", "Javascript"]:
         print(f"invalid target lang {target}")
         exit()
-    if model not in ["starcoder", "magicoder"]:
+    if model not in ["starcoder", "magicoder", "llama"]:
         if "gpt" not in model and "deepseek" not in model:
             print(f"invalid model")
             exit()
@@ -60,9 +60,9 @@ if __name__ == "__main__":
     ################################################################################
     # Instantiate Local Model if under use
     ################################################################################
-    model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b"}
+    model_map = {"magicoder": "Magicoder-S-DS-6.7B", "starcoder": "starcoder2-15b", "llama": "CodeLlama-7b-Instruct-hf"}
     model_name = model
-    if model in ["starcoder", "magicoder"]:
+    if model in ["starcoder", "magicoder", "llama"]:
         model = LocalCausalLMRunner(f"{models_dir}/{model_map[model]}")
     print("Instantiate Local Model if under use")
 
