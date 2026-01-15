@@ -5,11 +5,14 @@ set -euo pipefail
 TEMPLATE_FILE="template.sh"
 MODEL=$1
 
-datasets=("avatar" "codenet" "codenetintertrans")
+datasets=("avatar" "codenet" "codenetintertrans", "evalplus")
 
 # Dataset-specific language lists
 source_languages_avatar=("Java" "Python")
 target_languages_avatar=("C++" "C" "Java" "Go" "Python")
+
+source_languages_evalplus=("Python")
+target_languages_evalplus=("Java")
 
 source_languages_codenet=("C" "C++" "Go" "Python" "Java")
 target_languages_codenet=("C" "C++" "Go" "Python" "Java")
@@ -22,6 +25,10 @@ for dataset in "${datasets[@]}"; do
         avatar)
             source_languages=("${source_languages_avatar[@]}")
             target_languages=("${target_languages_avatar[@]}")
+            ;;
+        evalplus)
+            source_languages=("${source_languages_evalplus[@]}")
+            target_languages=("${target_languages_evalplus[@]}")
             ;;
         codenet)
             source_languages=("${source_languages_codenet[@]}")
