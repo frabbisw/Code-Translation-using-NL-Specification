@@ -1,2 +1,0 @@
-n: int
-return: list[int, float]

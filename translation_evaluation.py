@@ -374,10 +374,14 @@ def test_evalplus(source_lang, target_lang, report_dir, translation_dir, test_di
             f.close()
 
         if utility.wait_for_file(junit_file):
-            compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java"])
+            compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java", junit_file])
             if compile_success == Constants.COMPILATION_ERROR:
-                compile_failed.append(files[i])
-                compile_failed_dict[f"{files[i]}"] = f"{error_info}\n"
+                translated_file_compile_success, error_info = compile_success, error_info = compiler.compile_junit(jar_location, [translated_file, f"{root_dir}/Tuple.java"])
+                if translated_file_compile_success == Constants.COMPILATION_ERROR:
+                    compile_failed.append(files[i])
+                    compile_failed_dict[f"{files[i]}"] = f"{error_info}\n"
+                else:
+                    pass
             else:
                 source_files = [translated_file, f"{root_dir}/Tuple.java", junit_file]
                 verdict, report = compiler.run_junit(jar_location, source_files, junit_file)

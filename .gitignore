@@ -177,3 +177,5 @@ Repair_structure.txt
 folder_structure.py
 fix_test_converter.py
 add_package_all_file.py
+debug_temp_test_evalplus_test/
+temp_*/

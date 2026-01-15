@@ -1165,7 +1165,42 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         pass
                     expected_output_java = f"new Integer({func_output})"
 
-                out_sentence = out_sentence + "\t\tObject expected = " + "====XXXX====" + ";\n"  
+                out_sentence = out_sentence + "\t\tObject expected = " + "====XXXX====" + ";\n"
+            elif java_ret_type == "Object[]":
+                if (f"{func_output}".startswith("[") and f"{func_output}".endswith("]")) or (f"{func_output}".startswith("(") and f"{func_output}".endswith(")")):
+                    func_output = ast.literal_eval(func_output)
+                    expected_output_java = "new Object[]{"
+                    for elem_idx in range(len(func_output)):
+                        if type(func_output[elem_idx]) == type(""):
+                            expected_output_java = expected_output_java + "\"" + convert_python_str_to_java_String(func_output[elem_idx]) + "\""
+                            if elem_idx != len(func_output) - 1:
+                                expected_output_java = expected_output_java + ", "
+                        elif type(func_output[elem_idx]) == type(True):
+                            if func_output[elem_idx]: java_bool_value = "true"
+                            else: java_bool_value = "false"
+                            expected_output_java = expected_output_java + java_bool_value
+                            if elem_idx != len(func_output) - 1:
+                                expected_output_java = expected_output_java + ", "
+                        elif f"{func_output}".startswith("{") and f"{func_output}".endswith("}"):
+                            pass
+                        elif f"{func_output}".startswith("\"") and f"{func_output}".endswith("\""):
+                            expected_output_java = f"new String({func_output})"
+                        elif "." in f"{func_output}":
+                            try:
+                                if abs(float(func_output)) >= JAVA_DOUBLE_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            expected_output_java = f"new Double({func_output})"
+                        else:
+                            try:
+                                if abs(float(func_output)) >= JAVA_INT_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            expected_output_java = f"new Integer({func_output})"
+                    expected_output_java = expected_output_java + "}"
+                out_sentence = out_sentence + "\t\tObject[] expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "Map<String, Integer>":
                 func_output = ast.literal_eval(func_output)
                 keys = list(func_output.keys())
@@ -1210,9 +1245,13 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
 
     assert_inps = assert_inps[:-2]
     if incompatible_error:
-        test_str = test_str + "\t\t" + f"fail(\"Incompatible Python Test: {test_name}:self.assertEqual({utility.shorten_middle(func_output)}, {func_name}({utility.shorten_middle(func_input)})); {custom_error_message}\");" + "\n\t}"
+        normalized_func_input = convert_python_str_to_java_String(utility.shorten_middle(func_input)).replace("\"", "\\\"")
+        normalized_func_output = convert_python_str_to_java_String(utility.shorten_middle(func_output)).replace("\"", "\\\"")
+        test_str = test_str + "\t\t" + f"fail(\"Incompatible Python Test: {test_name}:self.assertEqual({normalized_func_output}, {func_name}({normalized_func_input})); {custom_error_message}\");" + "\n\t}"
     elif might_overflow:
-        test_str = test_str + "\t\t" + f"fail(\"Java Variable Overflow Issue for Python Test: {test_name}:self.assertEqual({utility.shorten_middle(func_output)}, {func_name}({utility.shorten_middle(func_input)})); using bigger data types in Java might help\");" + "\n\t}"
+        normalized_func_input = convert_python_str_to_java_String(utility.shorten_middle(func_input)).replace("\"", "\\\"")
+        normalized_func_output = convert_python_str_to_java_String(utility.shorten_middle(func_output)).replace("\"", "\\\"")
+        test_str = test_str + "\t\t" + f"fail(\"Java Variable Overflow Issue for Python Test: {test_name}:self.assertEqual({normalized_func_output}, {func_name}({normalized_func_input})); using bigger data types in Java might help\");" + "\n\t}"
     else:
         if java_ret_type == "float" or java_ret_type == "double":
             test_str = test_str + inp_sentence + out_sentence + "\t\tassertEquals(expected, " + code_id + "." + func_name_java + "(" + assert_inps + "), 0.00001" + ");" + "\n\t}"
