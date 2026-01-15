@@ -382,7 +382,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             except:
                                 pass
                             element = str(element)
-                        elif type(float(element)) == type(1.1):
+                        elif type(element) == type(1.1):
                             try:
                                 if abs(float(element)) >= JAVA_DOUBLE_MAX:
                                     might_overflow = True
@@ -401,26 +401,26 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         elif type(element) == type([]):
                             var_name = "__temp_arr" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
-                            for elem_idx in range(len(element)):
-                                if elem_idx != len(element) - 1:
-                                    inp_sentence = inp_sentence + element[elem_idx] + ", "
+                            for elem_idx2 in range(len(element)):
+                                if elem_idx2 != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx2] + ", "
                                 else:
-                                    inp_sentence = inp_sentence + element[elem_idx]
+                                    inp_sentence = inp_sentence + element[elem_idx2]
                             inp_sentence = inp_sentence + "};\n"
                             element = var_name
                         elif type(element) == type({}):
-                            var_name = "__temp_dict__"
+                            var_name = "__temp_dict" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
                             for key in list(element.keys()):
                                 inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
-                            element = "new HashMap<>(====XXXX====)"
+                            element = var_name
                         param_value_java = param_value_java + element
                         if elem_idx != len(param_value_python) - 1:
                             param_value_java = param_value_java + ", "
                     inp_sentence = inp_sentence + "\t\tList<Object> " + param_name_python + " = Arrays.asList(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
 
-                if param_detail_java[i][1] == "List<Number>":
+                elif param_detail_java[i][1] == "List<Number>":
                     param_value_python = param_value_python[1:(len(param_value_python) - 1)]
                     all_elements_in_python_list = param_value_python.strip().split(",")
                     param_value_java = ""
@@ -436,7 +436,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     inp_sentence = inp_sentence + "\t\tList<Number> " + param_name_python + " = Arrays.asList(" + param_value_java + ");\n"
                     assert_inps = assert_inps + param_name_python + ", "
 
-                if param_detail_java[i][1] == "double[]":
+                elif param_detail_java[i][1] == "double[]":
                     param_value_python = param_value_python[1:(len(param_value_python) - 1)]
                     all_elements_in_python_list = param_value_python.strip().split(",")
                     param_value_java = ""
@@ -452,7 +452,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     inp_sentence = inp_sentence + "\t\tdouble[] " + param_name_python + " = {" + param_value_java + "};\n"
                     assert_inps = assert_inps + param_name_python + ", "
                     
-                if param_detail_java[i][1] == "List<Double>":
+                elif param_detail_java[i][1] == "List<Double>":
                     param_value_python = param_value_python[1:(len(param_value_python) - 1)]
                     all_elements_in_python_list = param_value_python.strip().split(",")
                     param_value_java = ""
@@ -486,7 +486,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             except:
                                 pass
                             element = str(element)
-                        elif type(float(element)) == type(1.1):
+                        elif type(element) == type(1.1):
                             try:
                                 if abs(float(element)) >= JAVA_DOUBLE_MAX:
                                     might_overflow = True
@@ -505,19 +505,19 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         elif type(element) == type([]):
                             var_name = "__temp_arr" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
-                            for elem_idx in range(len(element)):
-                                if elem_idx != len(element) - 1:
-                                    inp_sentence = inp_sentence + element[elem_idx] + ", "
+                            for elem_idx2 in range(len(element)):
+                                if elem_idx2 != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx2] + ", "
                                 else:
-                                    inp_sentence = inp_sentence + element[elem_idx]
+                                    inp_sentence = inp_sentence + element[elem_idx2]
                             inp_sentence = inp_sentence + "};\n"
                             element = var_name
                         elif type(element) == type({}):
-                            var_name = "__temp_dict__"
+                            var_name = "__temp_dict" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
                             for key in list(element.keys()):
                                 inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
-                            element = "new HashMap<>(====XXXX====)"
+                            element = var_name
                         param_value_java = param_value_java + element
                         if elem_idx != len(param_value_python) - 1:
                             param_value_java = param_value_java + ", "
@@ -620,7 +620,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             except:
                                 pass
                             element = str(element)
-                        elif type(float(element)) == type(1.1):
+                        elif type(element) == type(1.1):
                             try:
                                 if abs(float(element)) >= JAVA_DOUBLE_MAX:
                                     might_overflow = True
@@ -639,19 +639,19 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         elif type(element) == type([]):
                             var_name = "__temp_arr" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
-                            for elem_idx in range(len(element)):
-                                if elem_idx != len(element) - 1:
-                                    inp_sentence = inp_sentence + element[elem_idx] + ", "
+                            for elem_idx2 in range(len(element)):
+                                if elem_idx2 != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx2] + ", "
                                 else:
-                                    inp_sentence = inp_sentence + element[elem_idx]
+                                    inp_sentence = inp_sentence + element[elem_idx2]
                             inp_sentence = inp_sentence + "};\n"
                             element = var_name
                         elif type(element) == type({}):
-                            var_name = "__temp_dict__"
+                            var_name = "__temp_dict" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
                             for key in list(element.keys()):
                                 inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
-                            element = "new HashMap<>(====XXXX====)"
+                            element = var_name
                         param_value_java = param_value_java + element
                         if elem_idx != len(param_value_python) - 1:
                             param_value_java = param_value_java + ", "
@@ -726,11 +726,11 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         elif type(element) == type([]):
                             var_name = "__temp_arr" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
-                            for elem_idx in range(len(element)):
-                                if elem_idx != len(element) - 1:
-                                    inp_sentence = inp_sentence + element[elem_idx] + ", "
+                            for elem_idx2 in range(len(element)):
+                                if elem_idx2 != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx2] + ", "
                                 else:
-                                    inp_sentence = inp_sentence + element[elem_idx]
+                                    inp_sentence = inp_sentence + element[elem_idx2]
                             inp_sentence = inp_sentence + "};\n"
                             element = var_name
                         elif type(element) == type({}):
@@ -867,7 +867,7 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                             except:
                                 pass
                             element = str(element)
-                        elif type(float(element)) == type(1.1):
+                        elif type(element) == type(1.1):
                             try:
                                 if abs(float(element)) >= JAVA_DOUBLE_MAX:
                                     might_overflow = True
@@ -886,19 +886,19 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                         elif type(element) == type([]):
                             var_name = "__temp_arr" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
-                            for elem_idx in range(len(element)):
-                                if elem_idx != len(element) - 1:
-                                    inp_sentence = inp_sentence + element[elem_idx] + ", "
+                            for elem_idx2 in range(len(element)):
+                                if elem_idx2 != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx2] + ", "
                                 else:
-                                    inp_sentence = inp_sentence + element[elem_idx]
+                                    inp_sentence = inp_sentence + element[elem_idx2]
                             inp_sentence = inp_sentence + "};\n"
                             element = var_name
                         elif type(element) == type({}):
-                            var_name = "__temp_dict__"
+                            var_name = "__temp_dict" + str(i) + "__"
                             inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
                             for key in list(element.keys()):
                                 inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
-                            element = "new HashMap<>(====XXXX====)"
+                            element = var_name
                         param_value_java = param_value_java + element
                         if elem_idx != len(param_value_python) - 1:
                             param_value_java = param_value_java + ", "
@@ -1171,36 +1171,101 @@ def convert_to_java(func_name, func_input, func_output, test_name, params, trans
                     func_output = ast.literal_eval(func_output)
                     expected_output_java = "new Object[]{"
                     for elem_idx in range(len(func_output)):
-                        if type(func_output[elem_idx]) == type(""):
-                            expected_output_java = expected_output_java + "\"" + convert_python_str_to_java_String(func_output[elem_idx]) + "\""
-                            if elem_idx != len(func_output) - 1:
-                                expected_output_java = expected_output_java + ", "
-                        elif type(func_output[elem_idx]) == type(True):
-                            if func_output[elem_idx]: java_bool_value = "true"
-                            else: java_bool_value = "false"
-                            expected_output_java = expected_output_java + java_bool_value
-                            if elem_idx != len(func_output) - 1:
-                                expected_output_java = expected_output_java + ", "
-                        elif f"{func_output}".startswith("{") and f"{func_output}".endswith("}"):
-                            pass
-                        elif f"{func_output}".startswith("\"") and f"{func_output}".endswith("\""):
-                            expected_output_java = f"new String({func_output})"
-                        elif "." in f"{func_output}":
+                        element = func_output[elem_idx]
+                        if type(element) == type(1):
                             try:
-                                if abs(float(func_output)) >= JAVA_DOUBLE_MAX:
+                                if abs(float(element)) >= JAVA_INT_MAX:
                                     might_overflow = True
                             except:
                                 pass
-                            expected_output_java = f"new Double({func_output})"
-                        else:
+                            element = str(element)
+                        elif type(element) == type(1.1):
                             try:
-                                if abs(float(func_output)) >= JAVA_INT_MAX:
+                                if abs(float(element)) >= JAVA_DOUBLE_MAX:
                                     might_overflow = True
                             except:
                                 pass
-                            expected_output_java = f"new Integer({func_output})"
+                            element = str(element)
+                        elif type(element) == type("a"):
+                            element = "\"" + element + "\""
+                        elif type(element) == type(None):
+                            element = "null"
+                        elif type(element) == type(True):
+                            if element == False:
+                                element = str(0)
+                            else:
+                                element = str(1)
+                        elif type(element) == type([]):
+                            var_name = "__temp_arr" + str(i) + "__"
+                            inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
+                            for elem_idx2 in range(len(element)):
+                                if elem_idx2 != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx2] + ", "
+                                else:
+                                    inp_sentence = inp_sentence + element[elem_idx2]
+                            inp_sentence = inp_sentence + "};\n"
+                            element = var_name
+                        elif type(element) == type({}):
+                            var_name = "__temp_dict" + str(i) + "__"
+                            inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
+                            for key in list(element.keys()):
+                                inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
+                            element = var_name
+                        expected_output_java = expected_output_java + element
+                        if elem_idx != len(func_output) - 1:
+                            expected_output_java = expected_output_java + ", "
                     expected_output_java = expected_output_java + "}"
                 out_sentence = out_sentence + "\t\tObject[] expected = " + "====XXXX====" + ";\n"
+            elif java_ret_type == "List<Object>":
+                if (f"{func_output}".startswith("[") and f"{func_output}".endswith("]")) or (f"{func_output}".startswith("(") and f"{func_output}".endswith(")")):
+                    func_output = ast.literal_eval(func_output)
+                    expected_output_java = "Arrays.asList("
+                    for elem_idx in range(len(func_output)):
+                        element = func_output[elem_idx]
+                        if type(element) == type(1):
+                            try:
+                                if abs(float(element)) >= JAVA_INT_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            element = str(element)
+                        elif type(element) == type(1.1):
+                            try:
+                                if abs(float(element)) >= JAVA_DOUBLE_MAX:
+                                    might_overflow = True
+                            except:
+                                pass
+                            element = str(element)
+                        elif type(element) == type("a"):
+                            element = "\"" + element + "\""
+                        elif type(element) == type(None):
+                            element = "null"
+                        elif type(element) == type(True):
+                            if element == False:
+                                element = str(0)
+                            else:
+                                element = str(1)
+                        elif type(element) == type([]):
+                            var_name = "__temp_arr" + str(i) + "__"
+                            inp_sentence = inp_sentence + "\t\tObject[] " + var_name + " = {"
+                            for elem_idx2 in range(len(element)):
+                                if elem_idx2 != len(element) - 1:
+                                    inp_sentence = inp_sentence + element[elem_idx2] + ", "
+                                else:
+                                    inp_sentence = inp_sentence + element[elem_idx2]
+                            inp_sentence = inp_sentence + "};\n"
+                            element = var_name
+                        elif type(element) == type({}):
+                            var_name = "__temp_dict" + str(i) + "__"
+                            inp_sentence = inp_sentence + "\t\tMap<Object, Object> " + var_name + " = new HashMap<>();\n"
+                            for key in list(element.keys()):
+                                inp_sentence = inp_sentence + "\t\t" + var_name + ".put(" + key + ", " + element[key] + ");\n"
+                            element = var_name
+                        expected_output_java = expected_output_java + element
+                        if elem_idx != len(func_output) - 1:
+                            expected_output_java = expected_output_java + ", "
+                    expected_output_java = expected_output_java + ")"
+                out_sentence = out_sentence + "\t\tList<Object> expected = " + "====XXXX====" + ";\n"
             elif java_ret_type == "Map<String, Integer>":
                 func_output = ast.literal_eval(func_output)
                 keys = list(func_output.keys())
