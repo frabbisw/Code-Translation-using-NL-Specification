@@ -5,7 +5,7 @@ set -euo pipefail
 TEMPLATE_FILE="template.sh"
 MODEL=$1
 
-datasets=("avatar" "codenet" "codenetintertrans", "evalplus")
+datasets=("avatar" "codenet" "codenetintertrans" "evalplus")
 
 # Dataset-specific language lists
 source_languages_avatar=("Java" "Python")
