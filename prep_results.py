@@ -57,16 +57,17 @@ def get_file_path(model, trans_type, dataset, src_lang, tl, itr_num):
     for path in [path3, path2, path1, path0]:
         if os.path.exists(path):
             return path
+    print(path0)
     return None
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
-    print("get_score_lang_pair")
+    # print("get_score_lang_pair")
     total_per_lang = DATASET_INSTANCES[dataset]
     n_tl = 0
     total_corrects = 0
     for tl in LANG_MAP[dataset][src_lang]:
         file_path = get_file_path(model, trans_type, dataset, src_lang, tl, itr_num)
-        print(file_path)
+        # print(file_path)
         if file_path is not None:
             n_tl += 1
             with open(file_path, "r") as f:
@@ -98,7 +99,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 # exit(0)
 
 def print_latex_row(dataset_key, dataset_cell, src_lang, tgt_langs):
-    print("print_latex_row")
+    # print("print_latex_row")
     cells = []
 
     # Printed columns
