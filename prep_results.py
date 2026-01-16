@@ -79,7 +79,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
             # print("file not found", file_path)
             continue
     if n_tl < 1:
-        return 0.0
+        return "-"
     return round(100 * total_corrects/(n_tl*total_per_lang), 2)
             
 # =========================
@@ -115,7 +115,7 @@ def print_latex_row(dataset_key, dataset_cell, src_lang, tgt_langs):
                 )
                 cells.append(f"{score:.2f}")
             except Exception:
-                cells.append("--")
+                cells.append("-")
 
     print(" & ".join(cells) + r" \\")
 
