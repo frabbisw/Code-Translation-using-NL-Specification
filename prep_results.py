@@ -65,6 +65,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
     total_corrects = 0
     for tl in LANG_MAP[dataset][src_lang]:
         file_path = get_file_path(model, trans_type, dataset, src_lang, tl, itr_num)
+        print(file_path)
         if file_path is not None:
             n_tl += 1
             with open(file_path, "r") as f:
