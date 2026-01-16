@@ -48,7 +48,7 @@ LANG_MAP = {
 }
 DATASET_INSTANCES = { "codenet": 200, "avatar": 240, "codenetintertrans": 35, "evalplus": 164, }
 
-def get_file_path(model, trans_type, dataset, src_lang, tl, itr_num):
+def get_file_path(model, trans_type, dataset, src_lang, tl):
     print("get_file_path")
     path3 = f"Repair/{model}/{trans_type}/itr3/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
     path2 = f"Repair/{model}/{trans_type}/itr2/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
@@ -68,9 +68,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
     total_corrects = 0
     print(dataset, src_lang)
     for tl in LANG_MAP[dataset][src_lang]:
-        pdb.set_trace()
-        file_path = get_file_path(model, trans_type, dataset, src_lang, tl, itr_num)
-        file_path = get_file_path(model, trans_type, dataset, src_lang, tl, itr_num)
+        file_path = get_file_path(model, trans_type, dataset, src_lang, tl)
         # print(file_path)
         if file_path is not None:
             n_tl += 1
