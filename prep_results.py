@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+import pdb
 
 # =========================
 # Configuration
@@ -89,7 +90,6 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 
 # print(get_score_lang_pair("magicoder", "translation_source", "codenet", "Python"))
 
-import pdb
 # pdb.set_trace()
 
 
