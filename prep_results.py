@@ -63,13 +63,13 @@ def get_file_path(model, trans_type, dataset, src_lang, tl, itr_num):
     return None
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
-    # print("get_score_lang_pair")
     total_per_lang = DATASET_INSTANCES[dataset]
     n_tl = 0
     total_corrects = 0
     print(dataset, src_lang)
     for tl in LANG_MAP[dataset][src_lang]:
-        print("hi")
+        pdb.set_trace()
+        file_path = get_file_path(model, trans_type, dataset, src_lang, tl, itr_num)
         file_path = get_file_path(model, trans_type, dataset, src_lang, tl, itr_num)
         # print(file_path)
         if file_path is not None:
@@ -89,11 +89,6 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
         return "-1"
     return round(100 * total_corrects/(n_tl*total_per_lang), 2)
             
-# =========================
-# LaTeX row generator
-# =========================
-
-
 
 # print(get_score_lang_pair("magicoder", "translation_source", "codenet", "Python"))
 
