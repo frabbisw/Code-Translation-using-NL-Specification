@@ -101,7 +101,7 @@ def print_latex_row(dataset_key, dataset_cell, src_lang, tgt_langs):
     # Printed columns
     cells.append(dataset_cell)
     cells.append(src_lang)
-    cells.append(", ".join(tgt_langs))
+    # cells.append(", ".join(tgt_langs))
 
     # Model × Prompt source results
     for model in MODELS:
