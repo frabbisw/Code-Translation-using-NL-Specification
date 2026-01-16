@@ -55,9 +55,10 @@ def get_file_path(model, trans_type, dataset, src_lang, tl, itr_num):
     path0 = f"Generations/{model}/{trans_type}/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
 
     for path in [path3, path2, path1, path0]:
+        print(path)
         if os.path.exists(path):
+            print()
             return path
-    print(path0)
     return None
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
