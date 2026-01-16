@@ -60,6 +60,7 @@ def get_file_path(model, trans_type, dataset, src_lang, tl, itr_num):
     return None
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
+    print("get_score_lang_pair")
     total_per_lang = DATASET_INSTANCES[dataset]
     n_tl = 0
     total_corrects = 0
@@ -97,6 +98,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 # exit(0)
 
 def print_latex_row(dataset_key, dataset_cell, src_lang, tgt_langs):
+    print("print_latex_row")
     cells = []
 
     # Printed columns
@@ -122,6 +124,7 @@ def print_latex_row(dataset_key, dataset_cell, src_lang, tgt_langs):
 
 
 def print_latex_table_body():
+    print("print_latex_table_body")
     for dataset in DATASETS:
         first_row = True
 
