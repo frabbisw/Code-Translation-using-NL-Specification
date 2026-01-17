@@ -32,8 +32,8 @@ for dataset in "${datasets[@]}"; do
             target_languages=("${target_languages_codenet[@]}")
             ;;
         evalplus)
-            sources=("${source_languages_evalplus[@]}")
-            targets=("${target_languages_evalplus[@]}")
+            source_languages=("${source_languages_evalplus[@]}")
+            target_languages=("${target_languages_evalplus[@]}")
             ;;
         codenetintertrans)
             source_languages=("${source_languages_codenetintertrans[@]}")
