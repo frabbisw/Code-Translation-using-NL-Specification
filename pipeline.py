@@ -66,12 +66,12 @@ if __name__ == "__main__":
         model = LocalCausalLMRunner(f"{models_dir}/{model_map[model]}")
     print("Instantiate Local Model if under use")
 
-
+    ext = f".{f_ext[source]}"
+    
     if source_phase:
         ################################################################################
         # Generate Translation using source (baseline)
         ################################################################################
-        ext = f".{f_ext[source]}"
         source_files = [f for f in os.listdir(source_dir) if os.path.isfile(os.path.join(source_dir, f)) and f.endswith(ext)]
         for file in source_files:
             translation_generation_sc.translation_generation_sc(dataset=dataset, source=source, target=target, filename=file, model=model, model_name=model_name)
