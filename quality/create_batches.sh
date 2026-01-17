@@ -6,7 +6,7 @@ TEMPLATE_FILE="template.sh"
 MODEL="magicoder"
 ORG_NAME="codenl"
 
-datasets=("avatar" "codenet" "codenetintertrans")
+datasets=("avatar" "codenet" "codenetintertrans" "evalplus")
 
 # Dataset-specific language lists
 source_languages_avatar=("Java" "Python")
@@ -18,6 +18,9 @@ target_languages_codenet=("C" "C++" "Go" "Python" "Java")
 source_languages_codenetintertrans=("C++" "Go" "Python" "Java" "Javascript" "Rust")
 target_languages_codenetintertrans=("C++" "Go" "Python" "Java" "Javascript" "Rust")
 
+source_languages_evalplus=("Python")
+target_languages_evalplus=("Java")
+
 for dataset in "${datasets[@]}"; do
     case "$dataset" in
         avatar)
@@ -27,6 +30,10 @@ for dataset in "${datasets[@]}"; do
         codenet)
             source_languages=("${source_languages_codenet[@]}")
             target_languages=("${target_languages_codenet[@]}")
+            ;;
+        evalplus)
+            sources=("${source_languages_evalplus[@]}")
+            targets=("${target_languages_evalplus[@]}")
             ;;
         codenetintertrans)
             source_languages=("${source_languages_codenetintertrans[@]}")
