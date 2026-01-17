@@ -22,7 +22,8 @@ module load cuda/12.3.2
 module load cmake/4.0.0
 module load anaconda/3.2024.10.1
 
-export LD_LIBRARY_PATH=/usr/lib64:/lib64
+# export LD_LIBRARY_PATH=/usr/lib64:/lib64
+export LD_LIBRARY_PATH=/usr/lib64:/lib64:$LD_LIBRARY_PATH
 export PATH="$HOME/my-nodejs/bin:$PATH"
 export PATH="$HOME/rust/bin:$PATH"
 eval "$(conda shell.bash hook)"
@@ -35,10 +36,23 @@ export PATH="$SONAR_SCANNER_HOME/bin:$BUILD_WRAPPER_HOME:$PATH"
 source set_token.sh
 echo "SONAR_TOKEN: $SONAR_TOKEN"
 
+SLEEP_TIME=10
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Generations ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+echo "sleeping for $SLEEP_TIME seconds..."
+sleep $SLEEP_TIME
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Generations ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+echo "sleeping for $SLEEP_TIME seconds..."
+sleep $SLEEP_TIME
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl_and_source Generations ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+echo "sleeping for $SLEEP_TIME seconds..."
+sleep $SLEEP_TIME
 
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+echo "sleeping for $SLEEP_TIME seconds..."
+sleep $SLEEP_TIME
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+echo "sleeping for $SLEEP_TIME seconds..."
+sleep $SLEEP_TIME
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl_and_source Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+echo "sleeping for $SLEEP_TIME seconds..."
+sleep $SLEEP_TIME
