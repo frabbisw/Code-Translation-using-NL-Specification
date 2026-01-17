@@ -36,6 +36,9 @@ source set_token.sh
 echo "SONAR_TOKEN: $SONAR_TOKEN"
 
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Generations ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Generations ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl_and_source Generations ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+
 bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
-bash analyse_pair.sh ##MODEL## ##DATASET## translation_source Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
+bash analyse_pair.sh ##MODEL## ##DATASET## translation_nl_and_source Repair ##SRC_LANG## ##TGT_LANG## ##ORG_NAME##
