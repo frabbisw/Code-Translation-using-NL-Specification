@@ -4,7 +4,7 @@ set -euo pipefail
 
 TEMPLATE_FILE="template.sh"
 MODEL="magicoder"
-ORG_NAME="nlspec"
+ORG_NAME="codenl"
 
 datasets=("avatar" "codenet" "codenetintertrans")
 
