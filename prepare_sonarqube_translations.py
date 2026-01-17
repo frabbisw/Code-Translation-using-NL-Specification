@@ -41,7 +41,7 @@ if __name__ == "__main__":
     target = args.target_lang
     model = args.model
 
-    root_folder = f"{os.getcwd()}/SonarQube_Ready_Artifacts/"
+    root_folder = f"{os.getcwd()}/AfterRepair/"
     os.makedirs(root_folder, exist_ok=True)
 
     phase = "translation_source"
