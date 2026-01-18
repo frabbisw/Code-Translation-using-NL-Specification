@@ -9,8 +9,8 @@ from pathlib import Path
 # Configuration
 # =========================
 
-# MODELS = ["gpt4", "magicoder", "deepseek"]
-MODELS = ["deepseek", "gpt4", "magicoder"]
+MODELS = ["gpt4", "magicoder", "deepseek"]
+# MODELS = ["deepseek", "gpt4", "magicoder"]
 
 TRANS_TYPES = [
     "translation_nl",
@@ -34,8 +34,8 @@ LANG_MAP = {
         "Go": ["C", "C++", "Java", "Python"],
     },
     "avatar": {
-        "Python": ["Java"],
-        "Java": ["Python"],
+        "Python": ["Java", "C", "C++", "Go"],
+        "Java": ["Python", "C", "C++", "Go"],
     },
     # "codenetintertrans": {
     #     "C++": ["Java", "Python", "Rust", "Go", "Javascript"],
