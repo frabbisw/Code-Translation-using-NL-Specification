@@ -79,15 +79,15 @@ def prepare_sonar_dict(org_name, project_path):
                         filepath = os.path.join(project_path, "sonar_report", f"{org_name}_{model}_{dataset}_{lang_id_map[src]}_{lang_id_map[tgt]}_{mode}_Repair_summary.json")
                         if not os.path.exists(filepath):
                             sonar_values[key] = "-"
-                            else:
-                                with open(os.path.join(project_path, "sonar_report", filepath), "r") as f:
-                                    contents = json.load(f)
-                                    try:
-                                        critical = contents["severity"].get("CRITICAL", 0)
-                                        blocker = contents["severity"].get("BLOCKER", 0)
-                                        sonar_values[key] = 1000 * (critical + blocker) / contents["ncloc"]
-                                    except Exception:
-                                        sonar_values[key] = 0
+                        else:
+                            with open(os.path.join(project_path, "sonar_report", filepath), "r") as f:
+                                contents = json.load(f)
+                                try:
+                                    critical = contents["severity"].get("CRITICAL", 0)
+                                    blocker = contents["severity"].get("BLOCKER", 0)
+                                    sonar_values[key] = 1000 * (critical + blocker) / contents["ncloc"]
+                                except Exception:
+                                    sonar_values[key] = 0
 
 def get_cell_value(model, dataset, src, tgt, mode):
     pass
