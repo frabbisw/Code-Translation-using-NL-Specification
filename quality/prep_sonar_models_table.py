@@ -112,13 +112,13 @@ def generate_table_rows():
                 # Model columns: GPT-4, Magicoder, DeepSeek
                 for model in MODELS:
                     for trans_type in TRANS_TYPES:
-                        mode = MODE_MAP[trans_type]
+                        # mode = MODE_MAP[trans_type]
                         value = get_cell_value(
                             model=model,
                             dataset=dataset,
                             src=src_lang,
                             tgt=tgt_lang,
-                            mode=mode,
+                            mode=trans_type,
                         )
                         row.append(str(value))
 
