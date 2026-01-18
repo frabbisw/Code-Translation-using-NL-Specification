@@ -80,7 +80,7 @@ def prepare_sonar_dict(org_name, project_path):
                         if not os.path.exists(filepath):
                             sonar_values[key] = "-"
                         else:
-                            with open(os.path.join(project_path, "sonar_report", filename), "r") as f:
+                            with open(os.path.join(project_path, "sonar_report", filepath), "r") as f:
                                 contents = json.load(f)
                                 try:
                                     sonar_values[key] = 1000 * (contents["severity"]["CRITICAL"] if "CRITICAL" in contents["severity"] else 0 + contents["severity"]["BLOCKER"] if "BLOCKER" in contents["severity"] else 0) / contents["ncloc"]
