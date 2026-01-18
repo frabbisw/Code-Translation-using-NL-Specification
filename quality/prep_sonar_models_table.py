@@ -21,7 +21,7 @@ TRANS_TYPES = [
 DATASETS = [
     "avatar",
     "codenet",
-    "codenetintertrans",
+    # "codenetintertrans",
     "evalplus",
 ]
 
