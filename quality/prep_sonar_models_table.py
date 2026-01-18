@@ -95,13 +95,19 @@ def get_cell_value(model, dataset, src, tgt, mode):
     return sonar_values[key]
 
 def generate_table_rows():
-    rows = []
-
     for dataset in DATASETS:
         lang_pairs = LANG_MAP[dataset]
+        seen_pairs = set()  # <-- key fix
 
         for src_lang, tgt_langs in lang_pairs.items():
             for tgt_lang in tgt_langs:
+                pair_key = (src_lang, tgt_lang)
+
+                # Skip duplicates
+                if pair_key in seen_pairs:
+                    continue
+                seen_pairs.add(pair_key)
+
                 row = []
 
                 # First three columns
@@ -112,7 +118,6 @@ def generate_table_rows():
                 # Model columns: GPT-4, Magicoder, DeepSeek
                 for model in MODELS:
                     for trans_type in TRANS_TYPES:
-                        # mode = MODE_MAP[trans_type]
                         value = get_cell_value(
                             model=model,
                             dataset=dataset,
@@ -120,9 +125,8 @@ def generate_table_rows():
                             tgt=tgt_lang,
                             mode=trans_type,
                         )
-                        row.append(str(value))
+                        row.append(str(value) if value is not None else "-")
 
-                # Convert to LaTeX row
                 latex_row = " & ".join(row) + r" \\"
                 print(latex_row)
 
