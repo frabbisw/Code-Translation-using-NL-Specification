@@ -87,7 +87,7 @@ def prepare_sonar_dict(org_name, project_path):
                                     pdb.set_trace()
                                     critical = contents["severity"].get("CRITICAL", 0)
                                     blocker = contents["severity"].get("BLOCKER", 0)
-                                    sonar_values[key] = 1000 * (critical + blocker) / int(contents["ncloc"])                                    
+                                    sonar_values[key] = round(1000 * (critical + blocker) / int(contents["ncloc"]), 2)                                    
                                 except Exception as e:
                                     sonar_values[key] = 0
 
