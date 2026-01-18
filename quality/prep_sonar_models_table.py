@@ -84,10 +84,10 @@ def prepare_sonar_dict(org_name, project_path):
                             with open(os.path.join(project_path, "sonar_report", filepath), "r") as f:
                                 contents = json.load(f)
                                 try:
+                                    pdb.set_trace()
                                     critical = contents["severity"].get("CRITICAL", 0)
                                     blocker = contents["severity"].get("BLOCKER", 0)
-                                    sonar_values[key] = 1000 * (critical + blocker) / contents["ncloc"]
-                                    pdb.set_trace()
+                                    sonar_values[key] = 1000 * (critical + blocker) / contents["ncloc"]                                    
                                 except Exception:
                                     sonar_values[key] = 0
 
