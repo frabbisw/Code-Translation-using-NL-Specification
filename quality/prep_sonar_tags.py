@@ -97,7 +97,7 @@ if __name__ == "__main__":
     prepare_tags("codenl", project_path)
     # print(tag_dict)
     for src in tag_dict.keys():
-        for tgt in tag_dict.keys():
+        for tgt in tag_dict[src].keys():
             tags = tag_dict[src][tgt]
             print(f"src: {src}, tgt: {tgt}")
             print("-"*50)
