@@ -84,7 +84,6 @@ def prepare_sonar_dict(org_name, project_path):
                             with open(os.path.join(project_path, "sonar_report", filepath), "r") as f:
                                 contents = json.load(f)
                                 try:
-                                    pdb.set_trace()
                                     critical = contents["severity"].get("CRITICAL", 0)
                                     blocker = contents["severity"].get("BLOCKER", 0)
                                     sonar_values[key] = round(1000 * (critical + blocker) / int(contents["ncloc"]), 2)                                    
@@ -92,7 +91,8 @@ def prepare_sonar_dict(org_name, project_path):
                                     sonar_values[key] = 0
 
 def get_cell_value(model, dataset, src, tgt, mode):
-    pass
+    key = f"{model}_{dataset}_{src}_{tgt}_{mode}"
+    return sonar_values[key]
 
 def generate_table_rows():
     rows = []
@@ -130,8 +130,10 @@ def generate_table_rows():
 if __name__ == "__main__":
     project_path = Path.cwd().parent
     prepare_sonar_dict("codenl", project_path)
-    print(sonar_values)
-    # generate_table_rows()
+    print("values are ready. preparing table ...")
+    print("="*50)
+    # print(sonar_values)
+    generate_table_rows()
     
 
 
