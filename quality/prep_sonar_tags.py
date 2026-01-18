@@ -68,7 +68,7 @@ tag_dict = {src: {} for src in lang_id_map.keys()}
 def get_tags(filepath):
     tags = []
     with open(filepath, "r") as f:
-        contents = json.load(filepath)
+        contents = json.load(f)
         for part in contents:
             if "tags" in part:
                 tags += part["tags"]
