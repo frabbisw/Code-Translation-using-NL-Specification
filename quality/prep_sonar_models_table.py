@@ -9,7 +9,8 @@ from pathlib import Path
 # Configuration
 # =========================
 
-MODELS = ["gpt4", "magicoder", "deepseek"]
+# MODELS = ["gpt4", "magicoder", "deepseek"]
+MODELS = ["deepseek", "gpt4", "magicoder"]
 
 TRANS_TYPES = [
     "translation_nl",
@@ -86,6 +87,7 @@ def prepare_sonar_dict(org_name, project_path):
                                     critical = contents["severity"].get("CRITICAL", 0)
                                     blocker = contents["severity"].get("BLOCKER", 0)
                                     sonar_values[key] = 1000 * (critical + blocker) / contents["ncloc"]
+                                    pdb.set_trace()
                                 except Exception:
                                     sonar_values[key] = 0
 
