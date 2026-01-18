@@ -4,6 +4,7 @@ from pathlib import Path
 import pdb
 import json
 from pathlib import Path
+from collections import Counter
 
 MODELS = ["gpt4", "magicoder", "deepseek"]
 # MODELS = ["deepseek", "gpt4", "magicoder"]
@@ -94,6 +95,14 @@ def prepare_tags(org_name, project_path):
 if __name__ == "__main__":
     project_path = Path.cwd().parent
     prepare_tags("codenl", project_path)
-    print(tag_dict)
+    # print(tag_dict)
+    for src in tag_dict.keys():
+        for tgt in tag_dict.keys():
+            tags = tag_dict[src][tgt]
+            print(f"src: {src}, tgt: {tgt}")
+            print("-"*50)
+            print(Counter(tags))
+            print("="*50)
+            print()
 
 
