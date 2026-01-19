@@ -127,17 +127,17 @@ def get_counts(tags):
 
 def print_modes_tags():
     project_path = Path.cwd().parent
-    prepare_tags("codenl", project_path)
+    prepare_tags_modes("codenl", project_path)
     # print(tag_dict)
     for mode in tag_dict_modes.keys():
         tags = tag_dict_modes[mode]
-            print(f"mode: {mode}")
-            print("-"*50)
-            get_counts(tags)
-            
-            # print(count)
-            print("="*50)
-            print()
+        print(f"mode: {mode}")
+        print("-"*50)
+        get_counts(tags)
+        
+        # print(count)
+        print("="*50)
+        print()
 
 def print_lang_tags():
     project_path = Path.cwd().parent
