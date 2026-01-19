@@ -11,7 +11,6 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
         return
 
     # 2. Extract unique languages to determine grid size
-    # Keys are expected to be in format "Src_to_Tgt"
     languages = set()
     for key in data.keys():
         if "_to_" in key:
@@ -20,7 +19,6 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                 languages.add(parts[0])
                 languages.add(parts[1])
     
-    # Sort languages for consistent axis ordering
     lang_list = sorted(list(languages))
     n = len(lang_list)
     
@@ -28,72 +26,66 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
         print("No valid 'Src_to_Tgt' keys found in JSON.")
         return
 
-    # 3. Setup the plot grid
-    # Rows = Target Languages, Columns = Source Languages
-    fig, axes = plt.subplots(n, n, figsize=(4 * n, 4 * n), constrained_layout=True)
+    # --- ADJUSTMENT 1: INCREASE FIGURE SIZE ---
+    # Previous: figsize=(4 * n, 4 * n)
+    # New: figsize=(6 * n, 6 * n) -> This makes the chart significantly larger in dimensions.
+    fig, axes = plt.subplots(n, n, figsize=(6 * n, 6 * n), constrained_layout=True)
     
-    # Title
-    fig.suptitle('SonarQube Issues Distribution: Source (X-axis) vs Target (Y-axis)', fontsize=24, weight='bold')
+    # Increase title font size to match new scale
+    fig.suptitle('SonarQube Issues Distribution: Source (X-axis) vs Target (Y-axis)', fontsize=30, weight='bold')
 
     # 4. Iterate through the grid
     for i, target_lang in enumerate(lang_list):      # Row = Target
         for j, source_lang in enumerate(lang_list):  # Col = Source
             
-            # Handle the axes object (axes is 1D if n=1, 2D if n>1)
             ax = axes[i, j] if n > 1 else axes
-            
-            # Construct key matching the JSON format
             key = f"{source_lang}_to_{target_lang}"
             
-            # Label Axes (headers for rows/cols)
+            # Label Axes (headers) - Increased font size
             if i == 0:
-                ax.set_title(source_lang, fontsize=16, weight='bold', pad=20) # Top headers (Source)
+                ax.set_title(source_lang, fontsize=20, weight='bold', pad=20) 
             if j == 0:
-                ax.set_ylabel(target_lang, fontsize=16, weight='bold', rotation=90, labelpad=20) # Left headers (Target)
+                ax.set_ylabel(target_lang, fontsize=20, weight='bold', rotation=90, labelpad=20)
 
-            # Check for data
             if source_lang == target_lang:
-                # Diagonal - usually N/A
-                ax.text(0.5, 0.5, "N/A", ha='center', va='center', color='grey', fontsize=12)
+                ax.text(0.5, 0.5, "N/A", ha='center', va='center', color='grey', fontsize=16)
                 ax.axis('off')
             elif key in data:
-                # Plot Pie Chart
                 issues = data[key]
                 labels = [item['topic'] for item in issues]
                 counts = [item['count'] for item in issues]
                 
-                # Plot
                 wedges, texts, autotexts = ax.pie(
                     counts, 
                     autopct='%1.0f%%',
                     startangle=90,
                     pctdistance=0.85,
-                    textprops={'fontsize': 9}
+                    # Increased font size for percentages inside pie
+                    textprops={'fontsize': 11} 
                 )
                 
-                # Add Legend (anchored to the side of the subplot to avoid clutter)
-                # We use a small font size so it fits
+                # Legend - Increased font size
                 ax.legend(
                     wedges, 
                     labels, 
                     title="Top Issues", 
                     loc="center left", 
                     bbox_to_anchor=(1, 0, 0.5, 1),
-                    fontsize='x-small'
+                    fontsize='small' # 'small' relative to the larger figure is readable
                 )
                 ax.set_aspect('equal')
             else:
-                # No data found for this pair
-                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=10)
+                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=14)
                 ax.axis('off')
 
-    # 5. Add global axis labels (optional, but helpful)
-    fig.text(0.5, 0.02, 'Source Language', ha='center', fontsize=20, weight='bold')
-    fig.text(0.02, 0.5, 'Target Language', va='center', rotation='vertical', fontsize=20, weight='bold')
+    # Global axis labels - Increased font size
+    fig.text(0.5, 0.02, 'Source Language', ha='center', fontsize=26, weight='bold')
+    fig.text(0.02, 0.5, 'Target Language', va='center', rotation='vertical', fontsize=26, weight='bold')
 
-    # 6. Save
-    print(f"Saving figure to {output_file}...")
-    plt.savefig(output_file, dpi=100)
+    # --- ADJUSTMENT 2: INCREASE RESOLUTION (DPI) ---
+    # dpi=300 is standard high-resolution (print quality)
+    print(f"Saving high-resolution figure to {output_file}...")
+    plt.savefig(output_file, dpi=300)
     print("Done.")
 
 if __name__ == "__main__":
