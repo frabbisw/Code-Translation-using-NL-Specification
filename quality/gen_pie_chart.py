@@ -32,7 +32,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
     fig, axes = plt.subplots(n, n, figsize=(6 * n, 6 * n), constrained_layout=True)
     
     # Increase title font size to match new scale
-    fig.suptitle('SonarQube Issues Distribution: Source (X-axis) vs Target (Y-axis)', fontsize=30, weight='bold')
+    # fig.suptitle('SonarQube Issues Distribution: Source (X-axis) vs Target (Y-axis)', fontsize=30, weight='bold')
 
     # 4. Iterate through the grid
     for i, target_lang in enumerate(lang_list):      # Row = Target
