@@ -1,0 +1,137 @@
+{
+  "C++_to_C": [
+    { "topic": "Split Declarations", "count": 1111 },
+    { "topic": "Missing Width Specifier", "count": 241 },
+    { "topic": "Deep Nesting", "count": 171 },
+    { "topic": "Tainted VLA Size", "count": 146 },
+    { "topic": "Others", "count": 299 }
+  ],
+  "C++_to_Java": [
+    { "topic": "Use Logger", "count": 1786 },
+    { "topic": "Invalid Class Name", "count": 1169 },
+    { "topic": "Unnamed Package", "count": 1165 },
+    { "topic": "Invalid Variable Name", "count": 1049 },
+    { "topic": "Others", "count": 234 }
+  ],
+  "C++_to_Python": [
+    { "topic": "Potential IndexError", "count": 181 },
+    { "topic": "Shadows Builtin", "count": 34 },
+    { "topic": "Invalid Parameter Name", "count": 21 },
+    { "topic": "Division by Zero", "count": 21 },
+    { "topic": "Others", "count": 149 }
+  ],
+  "C++_to_Go": [
+    { "topic": "Invalid Variable Name", "count": 67 },
+    { "topic": "High Cognitive Complexity", "count": 42 },
+    { "topic": "Group Parameters", "count": 27 },
+    { "topic": "Others", "count": 47 }
+  ],
+  "Java_to_C": [
+    { "topic": "Split Declarations", "count": 1747 },
+    { "topic": "Missing Width Specifier", "count": 558 },
+    { "topic": "Tainted VLA Size", "count": 413 },
+    { "topic": "Deep Nesting", "count": 363 },
+    { "topic": "Others", "count": 613 }
+  ],
+  "Java_to_C++": [
+    { "topic": "Split Declarations", "count": 1610 },
+    { "topic": "Avoid C-Style Array", "count": 456 },
+    { "topic": "Non-const Global", "count": 362 },
+    { "topic": "Deep Nesting", "count": 333 },
+    { "topic": "Others", "count": 381 }
+  ],
+  "Java_to_Python": [
+    { "topic": "Potential IndexError", "count": 305 },
+    { "topic": "Shadows Builtin", "count": 92 },
+    { "topic": "Merge If-Statements", "count": 50 },
+    { "topic": "Unused Loop Index", "count": 46 },
+    { "topic": "Others", "count": 359 }
+  ],
+  "Java_to_Go": [
+    { "topic": "High Cognitive Complexity", "count": 122 },
+    { "topic": "Invalid Variable Name", "count": 79 },
+    { "topic": "Others", "count": 107 }
+  ],
+  "Go_to_C": [
+    { "topic": "Split Declarations", "count": 880 },
+    { "topic": "Missing Width Specifier", "count": 287 },
+    { "topic": "Const Qualifier Dropped", "count": 200 },
+    { "topic": "Avoid Ellipsis", "count": 172 },
+    { "topic": "Others", "count": 399 }
+  ],
+  "Go_to_C++": [
+    { "topic": "Split Declarations", "count": 867 },
+    { "topic": "Non-const Global", "count": 164 },
+    { "topic": "Deep Nesting", "count": 136 },
+    { "topic": "Avoid C-Style Array", "count": 114 },
+    { "topic": "Others", "count": 232 }
+  ],
+  "Go_to_Java": [
+    { "topic": "Use Logger", "count": 1616 },
+    { "topic": "Unnamed Package", "count": 1140 },
+    { "topic": "Invalid Class Name", "count": 1140 },
+    { "topic": "Invalid Variable Name", "count": 916 },
+    { "topic": "Others", "count": 253 }
+  ],
+  "Go_to_Python": [
+    { "topic": "Potential IndexError", "count": 143 },
+    { "topic": "Shadows Builtin", "count": 53 },
+    { "topic": "Unused Loop Index", "count": 31 },
+    { "topic": "Invalid Parameter Name", "count": 31 },
+    { "topic": "Others", "count": 355 }
+  ],
+  "C_to_C++": [
+    { "topic": "Split Declarations", "count": 1264 },
+    { "topic": "Avoid C-Style Array", "count": 615 },
+    { "topic": "Non-const Global", "count": 601 },
+    { "topic": "Deep Nesting", "count": 230 },
+    { "topic": "Others", "count": 303 }
+  ],
+  "C_to_Java": [
+    { "topic": "Use Logger", "count": 2074 },
+    { "topic": "Invalid Class Name", "count": 1151 },
+    { "topic": "Unnamed Package", "count": 1147 },
+    { "topic": "Invalid Variable Name", "count": 559 },
+    { "topic": "Others", "count": 271 }
+  ],
+  "C_to_Python": [
+    { "topic": "Potential IndexError", "count": 177 },
+    { "topic": "Invalid Parameter Name", "count": 51 },
+    { "topic": "Shadows Builtin", "count": 33 },
+    { "topic": "Constant Return Value", "count": 29 },
+    { "topic": "Others", "count": 206 }
+  ],
+  "C_to_Go": [
+    { "topic": "Invalid Variable Name", "count": 53 },
+    { "topic": "Invalid Parameter Name", "count": 24 },
+    { "topic": "High Cognitive Complexity", "count": 23 },
+    { "topic": "Others", "count": 45 }
+  ],
+  "Python_to_C": [
+    { "topic": "Split Declarations", "count": 1890 },
+    { "topic": "Missing Width Specifier", "count": 603 },
+    { "topic": "Tainted VLA Size", "count": 435 },
+    { "topic": "Const Qualifier Dropped", "count": 414 },
+    { "topic": "Others", "count": 595 }
+  ],
+  "Python_to_C++": [
+    { "topic": "Split Declarations", "count": 1767 },
+    { "topic": "Non-const Global", "count": 304 },
+    { "topic": "Deep Nesting", "count": 299 },
+    { "topic": "Precision Loss", "count": 228 },
+    { "topic": "Others", "count": 297 }
+  ],
+  "Python_to_Java": [
+    { "topic": "Use Logger", "count": 4436 },
+    { "topic": "Unnamed Package", "count": 3336 },
+    { "topic": "Invalid Class Name", "count": 3335 },
+    { "topic": "Invalid Variable Name", "count": 2555 },
+    { "topic": "Others", "count": 390 }
+  ],
+  "Python_to_Go": [
+    { "topic": "Invalid Variable Name", "count": 317 },
+    { "topic": "High Cognitive Complexity", "count": 72 },
+    { "topic": "Group Parameters", "count": 29 },
+    { "topic": "Others", "count": 77 }
+  ]
+}
