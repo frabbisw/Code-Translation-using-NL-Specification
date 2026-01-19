@@ -73,8 +73,10 @@ def get_tags(filepath):
         for part in contents:
             # if "tags" in part:
             #     tags += part["tags"]
-            if "type" in part:
-                tags.append(part["type"])
+            # if "type" in part:
+            #     tags.append(part["type"])
+            if "message" in part:
+                tags.append(part["message"])
     return tags
 
 def prepare_tags(org_name, project_path):
