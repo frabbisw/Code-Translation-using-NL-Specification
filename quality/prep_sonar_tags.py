@@ -96,6 +96,22 @@ def prepare_tags(org_name, project_path):
                                 tag_dict[src][tgt] = []
                             tag_dict[src][tgt] += tags
 
+def get_counts(tags):
+    count = Counter(tags)
+    # Get the 4 most common tags
+    top_4 = count.most_common(4)
+    
+    # Create a new Counter
+    new_count = Counter(dict(top_4))
+    
+    # Sum the rest as "others"
+    others_count = sum(count.values()) - sum(new_count.values())
+    
+    if others_count > 0:
+        new_count["others"] = others_count
+    
+    print(new_count)
+
 if __name__ == "__main__":
     project_path = Path.cwd().parent
     prepare_tags("codenl", project_path)
@@ -105,7 +121,9 @@ if __name__ == "__main__":
             tags = tag_dict[src][tgt]
             print(f"src: {src}, tgt: {tgt}")
             print("-"*50)
-            print(Counter(tags))
+            count = get_counts(tags)
+            
+            print(count)
             print("="*50)
             print()
 
