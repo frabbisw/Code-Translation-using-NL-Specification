@@ -75,7 +75,8 @@ def get_tags(filepath):
             #     tags += part["tags"]
             # if "type" in part:
             #     tags.append(part["type"])
-            if "message" in part:
+            if part["impacts"]["severity"] in ["CRITICAL", "BLOCKER"]:
+                # if "message" in part:
                 tags.append(part["message"])
     return tags
 
