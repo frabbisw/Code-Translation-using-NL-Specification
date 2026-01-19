@@ -65,6 +65,7 @@ lang_id_map = {
 }
 
 tag_dict = {src: {} for src in lang_id_map.keys()}
+tag_dict_modes = {key: [] for key in MODE_MAP.keys()}
 
 def get_tags(filepath):
     tags = []
@@ -98,15 +99,25 @@ def prepare_tags(org_name, project_path):
                                 tag_dict[src][tgt] = []
                             tag_dict[src][tgt] += tags
 
+def prepare_tags_modes(org_name, project_path):
+    for model in MODELS:
+        for dataset in LANG_MAP.keys():
+            for src in LANG_MAP[dataset].keys():
+                for tgt in LANG_MAP[dataset][src]:
+                    for mode in MODE_MAP.keys():
+                        key = f"{model}_{dataset}_{src}_{tgt}_{mode}"
+                        print(key)
+                        filepath = os.path.join(project_path, "sonar_report", f"{org_name}_{model}_{dataset}_{lang_id_map[src]}_{lang_id_map[tgt]}_{mode}_Repair_details.json")
+                        if not os.path.exists(filepath):
+                            continue
+                        else:
+                            tags = get_tags(filepath)
+                            tag_dict_modes[mode] += tags
+
 def get_counts(tags):
     count = Counter(tags)
-    # Get the 4 most common tags
     top_4 = count.most_common(4)
-    
-    # Create a new Counter
     new_count = Counter(dict(top_4))
-    
-    # Sum the rest as "others"
     others_count = len(count.values()) - len(new_count.values())
     
     if others_count > 0:
@@ -114,7 +125,21 @@ def get_counts(tags):
     
     print(new_count)
 
-if __name__ == "__main__":
+def print_modes_tags():
+    project_path = Path.cwd().parent
+    prepare_tags("codenl", project_path)
+    # print(tag_dict)
+    for mode in tag_dict_modes.keys():
+        tags = tag_dict_modes[mode]
+            print(f"mode: {mode}")
+            print("-"*50)
+            get_counts(tags)
+            
+            # print(count)
+            print("="*50)
+            print()
+
+def print_lang_tags():
     project_path = Path.cwd().parent
     prepare_tags("codenl", project_path)
     # print(tag_dict)
@@ -127,6 +152,8 @@ if __name__ == "__main__":
             
             # print(count)
             print("="*50)
-            print()
+            print()   
 
-
+if __name__ == "__main__":
+    print_modes_tags()
+    # print_lang_tags()
