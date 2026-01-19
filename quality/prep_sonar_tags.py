@@ -75,10 +75,10 @@ def get_tags(filepath):
             #     tags += part["tags"]
             # if "type" in part:
             #     tags.append(part["type"])
-            if "impacts" in part and "severity" in part["impacts"]:
-                if part["impacts"]["severity"] in ["CRITICAL", "BLOCKER"]:
-                    # if "message" in part:
-                    tags.append(part["message"])
+            # if "impacts" in part and "severity" in part["impacts"]:
+            if part["impacts"][0]["severity"] in ["CRITICAL", "BLOCKER"]:
+                # if "message" in part:
+                tags.append(part["message"])
     return tags
 
 def prepare_tags(org_name, project_path):
