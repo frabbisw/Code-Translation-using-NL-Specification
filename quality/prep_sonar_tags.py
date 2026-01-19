@@ -105,7 +105,7 @@ def get_counts(tags):
     new_count = Counter(dict(top_4))
     
     # Sum the rest as "others"
-    others_count = sum(count.values()) - sum(new_count.values())
+    others_count = len(count.values()) - len(new_count.values())
     
     if others_count > 0:
         new_count["others"] = others_count
@@ -121,9 +121,9 @@ if __name__ == "__main__":
             tags = tag_dict[src][tgt]
             print(f"src: {src}, tgt: {tgt}")
             print("-"*50)
-            count = get_counts(tags)
+            get_counts(tags)
             
-            print(count)
+            # print(count)
             print("="*50)
             print()
 
