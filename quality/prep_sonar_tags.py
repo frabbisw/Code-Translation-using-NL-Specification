@@ -71,8 +71,10 @@ def get_tags(filepath):
     with open(filepath, "r") as f:
         contents = json.load(f)
         for part in contents:
-            if "tags" in part:
-                tags += part["tags"]
+            # if "tags" in part:
+            #     tags += part["tags"]
+            if "type" in part:
+                tags.append(part["type"])
     return tags
 
 def prepare_tags(org_name, project_path):
