@@ -9,6 +9,7 @@ import translation_evaluation
 import all_errors_fixation
 
 if __name__ == "__main__":
+    print("-+-+-+-+")
     f_ext = {"Python":"py", "Java": "java", "C++": "cpp", "C": "c", "Go": "go", "Javascript": "js", "Rust": "rs"}
     
     ################################################################################
@@ -34,6 +35,8 @@ if __name__ == "__main__":
     nl_spec_phase = args.NL_Spec_Phase
     source_phase = args.Source_Phase
     both_phase = args.NL_Spec_Source_Phase
+
+    print("-+-+-+-+")
 
     ################################################################################
     # Sanity Check of Inputs
@@ -67,9 +70,7 @@ if __name__ == "__main__":
     print("Instantiate Local Model if under use")
 
     ext = f".{f_ext[source]}"
-    
-    print("-+-+-+-+")
-    
+        
     if source_phase:
         ################################################################################
         # Generate Translation using source (baseline)
