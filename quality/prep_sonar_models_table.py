@@ -69,7 +69,7 @@ lang_id_map = {
 
 sonar_values = {}
 
-def prepare_sonar_dict(org_name, project_path):
+def prepare_sonar_dict(org_name, project_path, when):
     for model in MODELS:
         for dataset in LANG_MAP.keys():
             for src in LANG_MAP[dataset].keys():
@@ -77,7 +77,7 @@ def prepare_sonar_dict(org_name, project_path):
                     for mode in MODE_MAP.keys():
                         key = f"{model}_{dataset}_{src}_{tgt}_{mode}"
                         print(key)
-                        filepath = os.path.join(project_path, "sonar_report", f"{org_name}_{model}_{dataset}_{lang_id_map[src]}_{lang_id_map[tgt]}_{mode}_Repair_summary.json")
+                        filepath = os.path.join(project_path, "sonar_report", f"{org_name}_{model}_{dataset}_{lang_id_map[src]}_{lang_id_map[tgt]}_{mode}_{when}_summary.json")
                         if not os.path.exists(filepath):
                             sonar_values[key] = "-"
                         else:
@@ -133,7 +133,8 @@ def generate_table_rows():
 # Example usage
 if __name__ == "__main__":
     project_path = Path.cwd().parent
-    prepare_sonar_dict("codenl", project_path)
+    when = "Generations"
+    prepare_sonar_dict("codenl", project_path, when)
     print("values are ready. preparing table ...")
     print("="*50)
     # print(sonar_values)
