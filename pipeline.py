@@ -68,6 +68,8 @@ if __name__ == "__main__":
 
     ext = f".{f_ext[source]}"
     
+    print("-+-+-+-+")
+    
     if source_phase:
         ################################################################################
         # Generate Translation using source (baseline)
