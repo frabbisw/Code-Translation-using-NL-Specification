@@ -135,7 +135,7 @@ def print_latex_table_body():
                 tgt_langs=tgt_langs,
             )
 
-        print(r"\midrule")
+        print(r"\hline")
 
 
 if __name__ == "__main__":
