@@ -55,7 +55,7 @@ class LocalCausalLMRunner:
     # --------------------------------------------------
 
     def extract_code(self, code: str):
-        lang_labels = {"py", "python", "cpp", "c++", "c", "java", "go"}
+        lang_labels = {"py", "python", "cpp", "c++", "c", "java", "go", "rs", "js", "rust", "javascript"}
         code = code.replace("\r\n", "\n").strip()
         start = code.find("```")
         if start == -1:
