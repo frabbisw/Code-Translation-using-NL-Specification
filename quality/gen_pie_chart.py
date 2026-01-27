@@ -43,12 +43,12 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
             
             # Label Axes (headers) - Increased font size
             if i == 0:
-                ax.set_title(source_lang, fontsize=20, weight='bold', pad=20) 
+                ax.set_title(source_lang, fontsize=24, weight='bold', pad=20) 
             if j == 0:
-                ax.set_ylabel(target_lang, fontsize=20, weight='bold', rotation=90, labelpad=20)
+                ax.set_ylabel(target_lang, fontsize=24, weight='bold', rotation=90, labelpad=20)
 
             if source_lang == target_lang:
-                ax.text(0.5, 0.5, "N/A", ha='center', va='center', color='grey', fontsize=16)
+                ax.text(0.5, 0.5, "N/A", ha='center', va='center', color='grey', fontsize=20)
                 ax.axis('off')
             elif key in data:
                 issues = data[key]
@@ -61,7 +61,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     startangle=90,
                     pctdistance=0.85,
                     # Increased font size for percentages inside pie
-                    textprops={'fontsize': 11} 
+                    textprops={'fontsize': 20} 
                 )
                 
                 # Legend - Increased font size
@@ -71,11 +71,11 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     title="Top Issues", 
                     loc="center left", 
                     bbox_to_anchor=(1, 0, 0.5, 1),
-                    fontsize='small' # 'small' relative to the larger figure is readable
+                    fontsize=20 # 'small' relative to the larger figure is readable
                 )
                 ax.set_aspect('equal')
             else:
-                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=14)
+                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=20)
                 ax.axis('off')
 
     # Global axis labels - Increased font size
