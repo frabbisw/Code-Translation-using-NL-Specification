@@ -79,8 +79,8 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     labels, 
                     title="Issues", 
                     loc="center left", 
-                    bbox_to_anchor=(0.8, 0.5), # <--- Adjusted value
-                    fontsize=13, # Your increased font size
+                    bbox_to_anchor=(0.82, 0.5), # <--- Adjusted value
+                    fontsize=14, # Your increased font size
                     frameon=False 
                 )
                 ax.set_aspect('equal')
