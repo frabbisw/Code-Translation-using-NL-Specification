@@ -28,20 +28,18 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
     # 3. Setup Figure
     fig, axes = plt.subplots(n, n, figsize=(6 * n, 6 * n))
     
-    # Tight layout settings to save space
+    # Adjust spacing
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
 
     # 4. Iterate through grid
     for i, target_lang in enumerate(lang_list):      
         for j, source_lang in enumerate(lang_list):  
             
-            # Handle single vs multiple axes
             ax = axes[i, j] if n > 1 else axes
-            
             key = f"{source_lang}_to_{target_lang}"
             
             # --- HEADERS ---
-            # We set these regardless of whether the chart is transparent or not
+            # Set titles on the first row/column even if the cell is empty/transparent
             if i == 0:
                 ax.set_title(source_lang, fontsize=24, weight='bold', pad=20)
             if j == 0:
@@ -49,20 +47,20 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
 
             # --- PLOTTING LOGIC ---
             if source_lang == target_lang:
-                # === FIX: MAKE COMPLETELY TRANSPARENT ===
+                # === TRANSPARENCY FIX ===
                 
-                # 1. Set background to 'none' (Transparent)
+                # 1. Set background color to 'none' (Transparent)
                 ax.set_facecolor('none') 
                 
-                # 2. Remove ticks
+                # 2. Hide all ticks and labels
                 ax.set_xticks([])
                 ax.set_yticks([])
                 
-                # 3. Remove the border lines (spines)
+                # 3. Hide the border lines (spines)
                 for spine in ax.spines.values():
                     spine.set_visible(False)
                 
-                # 4. Ensure no grid lines appear
+                # 4. Turn off the grid (just in case)
                 ax.grid(False)
 
             elif key in data:
@@ -92,7 +90,8 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                 )
                 ax.set_aspect('equal')
             else:
-                # No Data Case - Also transparent background, but keeping "No Data" text
+                # No Data Case - Make this transparent too, but keep text? 
+                # Or just vanish it completely. Let's vanish the box but keep text.
                 ax.set_facecolor('none')
                 ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='#ccc', fontsize=12)
                 ax.set_xticks([])
@@ -104,8 +103,6 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
     print(f"Saving high-resolution figure to {output_file}...")
     
     # === CRITICAL: Save with transparent=True ===
-    # bbox_inches='tight' saves space
-    # transparent=True ensures the alpha channel is saved to the PNG
     plt.savefig(output_file, dpi=300, bbox_inches='tight', transparent=True)
     print("Done.")
 
