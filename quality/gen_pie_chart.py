@@ -10,7 +10,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
         print(f"Error: {json_file} not found. Please ensure the file exists.")
         return
 
-    # 2. Extract unique languages to determine grid size
+    # 2. Extract unique languages
     languages = set()
     for key in data.keys():
         if "_to_" in key:
@@ -27,23 +27,24 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
         return
 
     # 3. Setup Figure
-    # figsize=(5*n, 5*n) is a good balance between resolution and compactness
-    fig, axes = plt.subplots(n, n, figsize=(5 * n, 5 * n))
+    # CHANGE 1: WIDER FIGURE
+    # We use (7 * n) for width and (5 * n) for height.
+    # This extra width provides room for the legends on the right of each pie.
+    fig, axes = plt.subplots(n, n, figsize=(7 * n, 5 * n))
     
-    # ADJUSTMENT: Tighten the internal spacing to save white space
-    plt.subplots_adjust(wspace=0.1, hspace=0.1)
+    # CHANGE 2: INCREASE HORIZONTAL GAP
+    # wspace=0.5 means the gap between charts is 50% of the chart width.
+    # This ensures the legend text doesn't hit the chart next to it.
+    plt.subplots_adjust(wspace=0.6, hspace=0.1)
 
     # 4. Iterate through the grid
     for i, target_lang in enumerate(lang_list):      # Row = Target
         for j, source_lang in enumerate(lang_list):  # Col = Source
             
-            # Handle single vs multiple subplot indexing
             ax = axes[i, j] if n > 1 else axes
             key = f"{source_lang}_to_{target_lang}"
             
-            # --- FIX 1: HEADERS ---
-            # We set these immediately. We will NOT use ax.axis('off') later,
-            # because that would delete these headers.
+            # --- HEADERS ---
             if i == 0:
                 ax.set_title(source_lang, fontsize=24, weight='bold', pad=20) 
             if j == 0:
@@ -51,22 +52,13 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
 
             # --- PLOTTING LOGIC ---
             if source_lang == target_lang:
-                # --- FIX 2: TRANSPARENT DIAGONAL ---
-                # 1. Set background to transparent
+                # Transparent Diagonal
                 ax.set_facecolor('none')
-                
-                # 2. Hide ticks (markers on axis)
                 ax.set_xticks([])
                 ax.set_yticks([])
-                
-                # 3. Hide spines (the square border lines)
                 for spine in ax.spines.values():
                     spine.set_visible(False)
-                
-                # 4. Ensure grid is off
                 ax.grid(False)
-                
-                # We do NOT add any text, so it remains empty.
 
             elif key in data:
                 issues = data[key]
@@ -74,33 +66,32 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                 counts = [item['count'] for item in issues]
                 
                 # Pie Chart
-                # radius=0.9 ensures it fills the square without overflowing
                 wedges, texts, autotexts = ax.pie(
                     counts, 
                     autopct='%1.0f%%',
                     startangle=90,
                     radius=0.9, 
                     pctdistance=0.85,
-                    textprops={'fontsize': 16} 
+                    textprops={'fontsize': 14} 
                 )
                 
-                # Legend
-                # bbox_to_anchor places the legend intelligently outside the pie
+                # CHANGE 3: LEGEND POSITIONING
+                # bbox_to_anchor=(1.0, 0.5) starts the legend exactly at the edge of the box.
+                # The increased wspace (above) ensures this text has room to expand.
                 ax.legend(
                     wedges, 
                     labels, 
                     title="Issues", 
                     loc="center left", 
-                    bbox_to_anchor=(0.95, 0.5),
-                    fontsize=11,
+                    bbox_to_anchor=(1.0, 0.5),
+                    fontsize=10,
                     frameon=False 
                 )
                 ax.set_aspect('equal')
             else:
-                # No Data Case (also transparent)
+                # No Data Case
                 ax.set_facecolor('none')
                 ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='#ccc', fontsize=14)
-                
                 ax.set_xticks([])
                 ax.set_yticks([])
                 for spine in ax.spines.values():
@@ -109,9 +100,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
 
     print(f"Saving high-resolution figure to {output_file}...")
     
-    # --- FIX 3: SAVING ---
-    # bbox_inches='tight' -> prevents cutting off legends
-    # transparent=True -> makes the 'none' backgrounds actually transparent
+    # Save with tight bounding box and transparency
     plt.savefig(output_file, dpi=300, bbox_inches='tight', transparent=True)
     print("Done.")
 
