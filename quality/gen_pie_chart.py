@@ -7,10 +7,10 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
         with open(json_file, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"Error: {json_file} not found. Please ensure the file exists.")
+        print(f"Error: {json_file} not found.")
         return
 
-    # 2. Extract unique languages to determine grid size
+    # 2. Extract languages
     languages = set()
     for key in data.keys():
         if "_to_" in key:
@@ -23,50 +23,37 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
     n = len(lang_list)
     
     if n == 0:
-        print("No valid 'Src_to_Tgt' keys found in JSON.")
         return
 
-    # 3. Setup Figure with Tighter Spacing
-    # We remove constrained_layout to have manual control over spacing
-    fig, axes = plt.subplots(n, n, figsize=(5 * n, 5 * n)) 
+    # 3. Setup Figure
+    # We increase the figure size slightly to ensure text has room to breathe
+    fig, axes = plt.subplots(n, n, figsize=(6 * n, 6 * n))
     
-    # MANUAL ADJUSTMENT: This removes whitespace between subplots and around edges
-    plt.subplots_adjust(
-        left=0.05,    # Small margin on left
-        right=0.98,   # Small margin on right
-        top=0.95,     # Small margin on top (for column headers)
-        bottom=0.05,  # Small margin on bottom
-        wspace=0.1,   # Minimal horizontal space between charts
-        hspace=0.1    # Minimal vertical space between charts
-    )
+    # Adjust spacing: 
+    # wspace=0.3 gives the legends on the right a bit more room before hitting the next chart
+    plt.subplots_adjust(wspace=0.3, hspace=0.1)
 
-    # 4. Iterate through the grid
-    for i, target_lang in enumerate(lang_list):      # Row = Target
-        for j, source_lang in enumerate(lang_list):  # Col = Source
+    # 4. Iterate through grid
+    for i, target_lang in enumerate(lang_list):      
+        for j, source_lang in enumerate(lang_list):  
             
-            # Handle single vs multiple subplot indexing
-            if n > 1:
-                ax = axes[i, j]
-            else:
-                ax = axes
-
+            ax = axes[i, j] if n > 1 else axes
             key = f"{source_lang}_to_{target_lang}"
             
-            # --- FIX FOR BROKEN LABELS ---
-            # We set labels first. We will NOT use ax.axis('off') later, 
-            # as that deletes these labels.
+            # --- HEADERS ---
             if i == 0:
-                ax.set_title(source_lang, fontsize=20, weight='bold', pad=10) 
+                ax.set_title(source_lang, fontsize=22, weight='bold', pad=15)
             if j == 0:
-                ax.set_ylabel(target_lang, fontsize=20, weight='bold', rotation=90, labelpad=10)
+                ax.set_ylabel(target_lang, fontsize=22, weight='bold', rotation=90, labelpad=15)
 
-            # --- PLOTTING LOGIC ---
+            # --- PLOTTING ---
             if source_lang == target_lang:
-                # Diagonal (N/A)
-                ax.text(0.5, 0.5, "N/A", ha='center', va='center', color='#ccc', fontsize=24, weight='bold')
+                # FIX 2: Minimalist N/A
+                # Instead of big text, we just grey out the background
+                ax.set_facecolor('#f0f0f0') # Light grey background
+                ax.text(0.5, 0.5, "-", ha='center', va='center', color='#ccc', fontsize=20)
                 
-                # CRITICAL FIX: Do not use ax.axis('off'). 
-                # Instead, manually hide ticks and spines so labels persist.
+                # Hide ticks/spines cleanly
                 ax.set_xticks([])
                 ax.set_yticks([])
                 for spine in ax.spines.values():
@@ -77,42 +64,41 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                 labels = [item['topic'] for item in issues]
                 counts = [item['count'] for item in issues]
                 
+                # FIX 3: Shrink pie radius (0.75) to make room for legend
                 wedges, texts, autotexts = ax.pie(
                     counts, 
                     autopct='%1.0f%%',
                     startangle=90,
-                    pctdistance=0.85,
-                    textprops={'fontsize': 16} 
+                    radius=0.75, 
+                    pctdistance=0.75, # Move % numbers closer to center
+                    textprops={'fontsize': 14}
                 )
                 
-                # Legend - optimized to take less space
+                # FIX 1: Legend adjustments
                 ax.legend(
                     wedges, 
                     labels, 
                     title="Issues", 
                     loc="center left", 
-                    bbox_to_anchor=(0.9, 0, 0.5, 1), # Adjusted position
-                    fontsize=13,
-                    frameon=False # Removes box around legend to save visual clutter
+                    # Anchor (1.0, 0.5) puts it exactly at the right edge of the pie area
+                    bbox_to_anchor=(0.95, 0.5), 
+                    fontsize=11,
+                    frameon=False
                 )
                 ax.set_aspect('equal')
             else:
-                # No Data Case
-                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=16)
-                
-                # Hide ticks/spines but keep labels
+                # No Data - Subtle look
+                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=12)
                 ax.set_xticks([])
                 ax.set_yticks([])
                 for spine in ax.spines.values():
                     spine.set_visible(False)
 
-    # Global axis labels (Optional - usually the row/col headers are enough now)
-    # If you want to save more space, you can comment these two lines out:
-    fig.text(0.5, 0.01, 'Source Language', ha='center', fontsize=24, weight='bold')
-    fig.text(0.01, 0.5, 'Target Language', va='center', rotation='vertical', fontsize=24, weight='bold')
-
     print(f"Saving high-resolution figure to {output_file}...")
-    plt.savefig(output_file, dpi=300)
+    
+    # --- CRITICAL FIX ---
+    # bbox_inches='tight' calculates the bounding box of the figure *including* # all text and legends that might be sticking out, and expands the image to fit them.
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
     print("Done.")
 
 if __name__ == "__main__":
