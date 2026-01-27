@@ -61,7 +61,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     startangle=90,
                     pctdistance=0.85,
                     # Increased font size for percentages inside pie
-                    textprops={'fontsize': small} 
+                    textprops={'fontsize': 20} 
                 )
                 
                 # Legend - Increased font size
@@ -71,7 +71,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     title="Top Issues", 
                     loc="center left", 
                     bbox_to_anchor=(1, 0, 0.5, 1),
-                    fontsize=20 # 'small' relative to the larger figure is readable
+                    fontsize=small # 'small' relative to the larger figure is readable
                 )
                 ax.set_aspect('equal')
             else:
