@@ -92,7 +92,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     title="Issues", 
                     loc="center left", 
                     bbox_to_anchor=(0.9, 0, 0.5, 1), # Adjusted position
-                    fontsize=10,
+                    fontsize=13,
                     frameon=False # Removes box around legend to save visual clutter
                 )
                 ax.set_aspect('equal')
