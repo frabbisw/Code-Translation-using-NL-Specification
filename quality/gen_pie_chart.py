@@ -65,7 +65,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     counts, 
                     autopct='%1.0f%%',
                     startangle=90,
-                    radius=0.75, 
+                    radius=0.7, 
                     pctdistance=0.85,
                     textprops={'fontsize': 18} 
                 )
