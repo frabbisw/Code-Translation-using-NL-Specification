@@ -26,30 +26,52 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
         print("No valid 'Src_to_Tgt' keys found in JSON.")
         return
 
-    # --- ADJUSTMENT 1: INCREASE FIGURE SIZE ---
-    # Previous: figsize=(4 * n, 4 * n)
-    # New: figsize=(6 * n, 6 * n) -> This makes the chart significantly larger in dimensions.
-    fig, axes = plt.subplots(n, n, figsize=(6 * n, 6 * n), constrained_layout=True)
+    # 3. Setup Figure with Tighter Spacing
+    # We remove constrained_layout to have manual control over spacing
+    fig, axes = plt.subplots(n, n, figsize=(5 * n, 5 * n)) 
     
-    # Increase title font size to match new scale
-    # fig.suptitle('SonarQube Issues Distribution: Source (X-axis) vs Target (Y-axis)', fontsize=30, weight='bold')
+    # MANUAL ADJUSTMENT: This removes whitespace between subplots and around edges
+    plt.subplots_adjust(
+        left=0.05,    # Small margin on left
+        right=0.98,   # Small margin on right
+        top=0.95,     # Small margin on top (for column headers)
+        bottom=0.05,  # Small margin on bottom
+        wspace=0.1,   # Minimal horizontal space between charts
+        hspace=0.1    # Minimal vertical space between charts
+    )
 
     # 4. Iterate through the grid
     for i, target_lang in enumerate(lang_list):      # Row = Target
         for j, source_lang in enumerate(lang_list):  # Col = Source
             
-            ax = axes[i, j] if n > 1 else axes
+            # Handle single vs multiple subplot indexing
+            if n > 1:
+                ax = axes[i, j]
+            else:
+                ax = axes
+
             key = f"{source_lang}_to_{target_lang}"
             
-            # Label Axes (headers) - Increased font size
+            # --- FIX FOR BROKEN LABELS ---
+            # We set labels first. We will NOT use ax.axis('off') later, 
+            # as that deletes these labels.
             if i == 0:
-                ax.set_title(source_lang, fontsize=24, weight='bold', pad=20) 
+                ax.set_title(source_lang, fontsize=20, weight='bold', pad=10) 
             if j == 0:
-                ax.set_ylabel(target_lang, fontsize=24, weight='bold', rotation=90, labelpad=20)
+                ax.set_ylabel(target_lang, fontsize=20, weight='bold', rotation=90, labelpad=10)
 
+            # --- PLOTTING LOGIC ---
             if source_lang == target_lang:
-                ax.text(0.5, 0.5, "N/A", ha='center', va='center', color='grey', fontsize=20)
-                ax.axis('off')
+                # Diagonal (N/A)
+                ax.text(0.5, 0.5, "N/A", ha='center', va='center', color='#ccc', fontsize=24, weight='bold')
+                
+                # CRITICAL FIX: Do not use ax.axis('off'). 
+                # Instead, manually hide ticks and spines so labels persist.
+                ax.set_xticks([])
+                ax.set_yticks([])
+                for spine in ax.spines.values():
+                    spine.set_visible(False)
+
             elif key in data:
                 issues = data[key]
                 labels = [item['topic'] for item in issues]
@@ -60,30 +82,35 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     autopct='%1.0f%%',
                     startangle=90,
                     pctdistance=0.85,
-                    # Increased font size for percentages inside pie
-                    textprops={'fontsize': 20} 
+                    textprops={'fontsize': 16} 
                 )
                 
-                # Legend - Increased font size
+                # Legend - optimized to take less space
                 ax.legend(
                     wedges, 
                     labels, 
-                    title="Top Issues", 
+                    title="Issues", 
                     loc="center left", 
-                    bbox_to_anchor=(1, 0, 0.5, 1),
-                    fontsize=13 # 'small' relative to the larger figure is readable
+                    bbox_to_anchor=(0.9, 0, 0.5, 1), # Adjusted position
+                    fontsize=10,
+                    frameon=False # Removes box around legend to save visual clutter
                 )
                 ax.set_aspect('equal')
             else:
-                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=20)
-                ax.axis('off')
+                # No Data Case
+                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='grey', fontsize=16)
+                
+                # Hide ticks/spines but keep labels
+                ax.set_xticks([])
+                ax.set_yticks([])
+                for spine in ax.spines.values():
+                    spine.set_visible(False)
 
-    # Global axis labels - Increased font size
-    fig.text(0.5, 0.02, 'Source Language', ha='center', fontsize=26, weight='bold')
-    fig.text(0.02, 0.5, 'Target Language', va='center', rotation='vertical', fontsize=26, weight='bold')
+    # Global axis labels (Optional - usually the row/col headers are enough now)
+    # If you want to save more space, you can comment these two lines out:
+    fig.text(0.5, 0.01, 'Source Language', ha='center', fontsize=24, weight='bold')
+    fig.text(0.01, 0.5, 'Target Language', va='center', rotation='vertical', fontsize=24, weight='bold')
 
-    # --- ADJUSTMENT 2: INCREASE RESOLUTION (DPI) ---
-    # dpi=300 is standard high-resolution (print quality)
     print(f"Saving high-resolution figure to {output_file}...")
     plt.savefig(output_file, dpi=300)
     print("Done.")
