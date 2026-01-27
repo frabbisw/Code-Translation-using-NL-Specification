@@ -61,7 +61,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     startangle=90,
                     pctdistance=0.85,
                     # Increased font size for percentages inside pie
-                    textprops={'fontsize': 20} 
+                    textprops={'fontsize': small} 
                 )
                 
                 # Legend - Increased font size
