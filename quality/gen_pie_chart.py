@@ -67,7 +67,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     startangle=90,
                     radius=0.9, 
                     pctdistance=0.85,
-                    textprops={'fontsize': 14} 
+                    textprops={'fontsize': 18} 
                 )
                 
                 # --- CHANGE: Bring Legend Closer ---
@@ -80,14 +80,14 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     title="Issues", 
                     loc="center left", 
                     bbox_to_anchor=(0.80, 0.5), # <--- Adjusted value
-                    fontsize=16, # Your increased font size
+                    fontsize=18, # Your increased font size
                     frameon=False 
                 )
                 ax.set_aspect('equal')
             else:
                 # No Data Case
                 ax.set_facecolor('none')
-                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='#ccc', fontsize=14)
+                ax.text(0.5, 0.5, "No Data", ha='center', va='center', color='#ccc', fontsize=18)
                 ax.set_xticks([])
                 ax.set_yticks([])
                 for spine in ax.spines.values():
