@@ -77,9 +77,9 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                 ax.legend(
                     wedges, 
                     labels, 
-                    title="Issues", 
+                    # title="Issues", 
                     loc="center left", 
-                    bbox_to_anchor=(0.75, 0.5), # <--- Adjusted value
+                    bbox_to_anchor=(0.65, 0.5), # <--- Adjusted value
                     fontsize=18, # Your increased font size
                     frameon=False 
                 )
