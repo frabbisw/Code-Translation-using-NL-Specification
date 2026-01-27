@@ -27,19 +27,15 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
         return
 
     # 3. Setup Figure
-    # CHANGE 1: WIDER FIGURE
-    # We use (7 * n) for width and (5 * n) for height.
-    # This extra width provides room for the legends on the right of each pie.
+    # Adjusted width slightly to accommodate font size without excessive gap
     fig, axes = plt.subplots(n, n, figsize=(7 * n, 5 * n))
     
-    # CHANGE 2: INCREASE HORIZONTAL GAP
-    # wspace=0.5 means the gap between charts is 50% of the chart width.
-    # This ensures the legend text doesn't hit the chart next to it.
+    # Keep spacing generous so legends don't overlap neighboring charts
     plt.subplots_adjust(wspace=0.6, hspace=0.1)
 
     # 4. Iterate through the grid
-    for i, target_lang in enumerate(lang_list):      # Row = Target
-        for j, source_lang in enumerate(lang_list):  # Col = Source
+    for i, target_lang in enumerate(lang_list):      
+        for j, source_lang in enumerate(lang_list):  
             
             ax = axes[i, j] if n > 1 else axes
             key = f"{source_lang}_to_{target_lang}"
@@ -65,7 +61,6 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                 labels = [item['topic'] for item in issues]
                 counts = [item['count'] for item in issues]
                 
-                # Pie Chart
                 wedges, texts, autotexts = ax.pie(
                     counts, 
                     autopct='%1.0f%%',
@@ -75,16 +70,17 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     textprops={'fontsize': 14} 
                 )
                 
-                # CHANGE 3: LEGEND POSITIONING
-                # bbox_to_anchor=(1.0, 0.5) starts the legend exactly at the edge of the box.
-                # The increased wspace (above) ensures this text has room to expand.
+                # --- CHANGE: Bring Legend Closer ---
+                # Previous: bbox_to_anchor=(1.0, 0.5)
+                # New: bbox_to_anchor=(0.92, 0.5) 
+                # This moves the legend slightly to the left, closer to the pie.
                 ax.legend(
                     wedges, 
                     labels, 
                     title="Issues", 
                     loc="center left", 
-                    bbox_to_anchor=(1.0, 0.5),
-                    fontsize=14,
+                    bbox_to_anchor=(0.92, 0.5), # <--- Adjusted value
+                    fontsize=12, # Your increased font size
                     frameon=False 
                 )
                 ax.set_aspect('equal')
@@ -99,8 +95,6 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                 ax.grid(False)
 
     print(f"Saving high-resolution figure to {output_file}...")
-    
-    # Save with tight bounding box and transparency
     plt.savefig(output_file, dpi=300, bbox_inches='tight', transparent=True)
     print("Done.")
 
