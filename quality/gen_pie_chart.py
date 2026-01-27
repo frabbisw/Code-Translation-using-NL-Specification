@@ -71,7 +71,7 @@ def generate_issues_chart(json_file='tags.json', output_file='tags.png'):
                     title="Top Issues", 
                     loc="center left", 
                     bbox_to_anchor=(1, 0, 0.5, 1),
-                    fontsize='small' # 'small' relative to the larger figure is readable
+                    fontsize=16 # 'small' relative to the larger figure is readable
                 )
                 ax.set_aspect('equal')
             else:
