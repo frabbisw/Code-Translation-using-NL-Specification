@@ -29,6 +29,8 @@ LANG_MAP = {
         "C": ["C++", "Java", "Python", "Go"],
         "C++": ["C", "Java", "Python", "Go"],
         "Go": ["C", "C++", "Java", "Python"],
+        "Rust": ["C", "C++", "Java", "Python"],
+        "Javascript": ["C", "C++", "Java", "Python"],
     },
     "avatar": {
         "Python": ["Java"],
