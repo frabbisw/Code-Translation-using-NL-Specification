@@ -34,19 +34,25 @@ LANG_MAP = {
         "Python": ["Java"],
         "Java": ["Python"],
     },
+    # "codenetintertrans": {
+    #     "C++": ["Java", "Python", "Rust", "Go", "Javascript"],
+    #     "Java": ["C++", "Python", "Rust", "Go", "Javascript"],
+    #     "Python": ["C++", "Java", "Rust", "Go", "Javascript"],
+    #     "Rust": ["C++", "Java", "Python", "Go", "Javascript"],
+    #     "Go": ["C++", "Java", "Python", "Rust", "Javascript"],
+    #     "Javascript": ["C++", "Java", "Python", "Rust", "Go"],
+    # },
     "codenetintertrans": {
-        "C++": ["Java", "Python", "Rust", "Go", "Javascript"],
-        "Java": ["C++", "Python", "Rust", "Go", "Javascript"],
-        "Python": ["C++", "Java", "Rust", "Go", "Javascript"],
-        "Rust": ["C++", "Java", "Python", "Go", "Javascript"],
-        "Go": ["C++", "Java", "Python", "Rust", "Javascript"],
-        "Javascript": ["C++", "Java", "Python", "Rust", "Go"],
+        "C++": ["Java", "Python", "Go"],
+        "Java": ["C++", "Python", "Go"],
+        "Python": ["C++", "Java", "Go"],
+        "Go": ["C++", "Java", "Python"],
     },
     "evalplus": {
         "Python": ["Java"],
     },
 }
-DATASET_INSTANCES = { "codenet": 200, "avatar": 240, "codenetintertrans": 35, "evalplus": 164, }
+DATASET_INSTANCES = { "codenet": 200, "avatar": 240, "codenetintertrans": 35, "evalplus": 164}
 
 def get_file_path(model, trans_type, dataset, src_lang, tl):
     path3 = f"Repair/{model}/{trans_type}/itr3/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
