@@ -81,6 +81,7 @@ def count_corrects(file_path):
             incorrects = int(l.split(":")[-1].strip())
           elif l.startswith("Total Correct:"):
             corrects = int(l.split(":")[-1].strip())
+        print(file_path, total_per_lang - incorrects + corrects)
         return (total_per_lang - incorrects + corrects)        
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
@@ -126,7 +127,7 @@ def print_latex_row(model, dataset, src_lang):
             print(cell, end=" & ")
         except:
             print("-", end=" & ")
-    print("\\")
+    print("\\\\")
     
 def print_model(model):
     for dataset in DATASETS:
