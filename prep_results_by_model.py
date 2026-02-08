@@ -101,6 +101,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
             continue
     if n_tl < 1:
         return "-1"
+    print(total_corrects_fixed, total_corrects_trans)
     fixed_score = round(100 * total_corrects_fixed/(n_tl*total_per_lang), 2)
     trans_score = round(100 * total_corrects_trans/(n_tl*total_per_lang), 2)
     return f"{fixed_score}//% {trans_score}\\%$\\uparrow$"
