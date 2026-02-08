@@ -91,19 +91,16 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
     total_corrects_trans = 0
     
     for tl in LANG_MAP[dataset][src_lang]:
-        try:
-            file_path_fixed = get_file_path_fixed(model, trans_type, dataset, src_lang, tl)
-            file_path_trans = get_file_path_trans(model, trans_type, dataset, src_lang, tl)
-            if file_path_fixed is not None:
-                n_tl += 1
-                total_corrects_fixed += count_corrects_fixed(file_path_fixed)
-                total_corrects_trans += count_corrects_trans(file_path_trans)
-            else:
-                print("file not found", file_path)
-                continue
-        except Eception as e:
-            print(e)
-        
+        file_path_fixed = get_file_path_fixed(model, trans_type, dataset, src_lang, tl)
+        file_path_trans = get_file_path_trans(model, trans_type, dataset, src_lang, tl)
+        if file_path_fixed is not None:
+            n_tl += 1
+            total_corrects_fixed += count_corrects_fixed(file_path_fixed)
+            total_corrects_trans += count_corrects_trans(file_path_trans)
+        else:
+            print("file not found", file_path)
+            continue
+    
     if n_tl < 1:
         return "-1"
     print(total_corrects_fixed, total_corrects_trans)
@@ -122,11 +119,8 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 def print_latex_row(model, dataset, src_lang):
     print(model, dataset, src_lang, end=" || ")
     for trans in TRANS_TYPES:
-        try:
-            cell = get_score_lang_pair(model, trans_type, dataset, src_lang)
-            print(cell, end=" & ")
-        except:
-            print("-", end=" & ")
+        cell = get_score_lang_pair(model, trans_type, dataset, src_lang)
+        print(cell, end=" & ")
     print("\\\\")
     
 def print_model(model):
