@@ -96,17 +96,8 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
             n_tl += 1
             total_corrects_fixed += count_corrects_fixed(file_path_fixed)
             total_corrects_trans += count_corrects_trans(file_path_trans)
-            
-            # with open(file_path, "r") as f:
-            #     lines = [l.strip() for l in f.readlines()]                        
-            #     for l in lines:
-            #       if l.startswith("Total Instances:"):
-            #         incorrects = int(l.split(":")[-1].strip())
-            #       elif l.startswith("Total Correct:"):
-            #         corrects = int(l.split(":")[-1].strip())
-            #     total_corrects += (total_per_lang - incorrects + corrects)
         else:
-            # print("file not found", file_path)
+            print("file not found", file_path)
             continue
     if n_tl < 1:
         return "-1"
