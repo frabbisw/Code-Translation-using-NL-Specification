@@ -70,7 +70,7 @@ def get_file_path_fixed(model, trans_type, dataset, src_lang, tl):
 def get_file_path_trans(model, trans_type, dataset, src_lang, tl):
     path0 = f"Generations/{model}/{trans_type}/Reports/{dataset}/{src_lang}/{tl}/{dataset}_compileReport_from_{src_lang}_to_{tl}.txt"
     if os.path.exists(path0):
-        return path
+        return path0
     return None
 
 def count_corrects(file_path):
