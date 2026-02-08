@@ -73,7 +73,7 @@ def get_file_path_trans(model, trans_type, dataset, src_lang, tl):
         return path0
     return None
 
-def count_corrects(file_path):
+def count_corrects(file_path, total_per_lang):
     with open(file_path, "r") as f:
         lines = [l.strip() for l in f.readlines()]                        
         for l in lines:
@@ -95,8 +95,8 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
         file_path_trans = get_file_path_trans(model, trans_type, dataset, src_lang, tl)
         if file_path_fixed is not None:
             n_tl += 1
-            total_corrects_fixed += count_corrects(file_path_fixed)
-            total_corrects_trans += count_corrects(file_path_trans)
+            total_corrects_fixed += count_corrects(file_path_fixed, total_per_lang)
+            total_corrects_trans += count_corrects(file_path_trans, total_per_lang)
         else:
             print("file not found", file_path)
             continue
