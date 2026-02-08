@@ -10,8 +10,8 @@ import pdb
 MODELS = ["gpt4", "magicoder", "deepseek"]
 
 TRANS_TYPES = [
-    "translation_nl",
     "translation_source",
+    "translation_nl",
     "translation_nl_and_source",
 ]
 
