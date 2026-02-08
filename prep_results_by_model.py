@@ -81,7 +81,7 @@ def count_corrects(file_path, total_per_lang):
             incorrects = int(l.split(":")[-1].strip())
           elif l.startswith("Total Correct:"):
             corrects = int(l.split(":")[-1].strip())
-        print(file_path, total_per_lang - incorrects + corrects)
+        # print(file_path, total_per_lang - incorrects + corrects)
         return (total_per_lang - incorrects + corrects)        
 
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
@@ -98,12 +98,12 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
             total_corrects_fixed += count_corrects(file_path_fixed, total_per_lang)
             total_corrects_trans += count_corrects(file_path_trans, total_per_lang)
         else:
-            print("file not found", file_path)
+            # print("file not found", file_path)
             continue
     
     if n_tl < 1:
         return "-1"
-    print(total_corrects_fixed, total_corrects_trans)
+    # print(total_corrects_fixed, total_corrects_trans)
     fixed_score = round(100 * total_corrects_fixed/(n_tl*total_per_lang), 2)
     trans_score = round(100 * total_corrects_trans/(n_tl*total_per_lang), 2)
     return f"{fixed_score}//% {trans_score}\\%$\\uparrow$"
@@ -119,8 +119,11 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 def print_latex_row(model, dataset, src_lang):
     print(model, dataset, src_lang, end=" || ")
     for trans_type in TRANS_TYPES:
-        cell = get_score_lang_pair(model, trans_type, dataset, src_lang)
-        print(cell, end=" & ")
+        try:
+            cell = get_score_lang_pair(model, trans_type, dataset, src_lang)
+            print(cell, end=" & ")
+        except:
+            print("-", end = " & ")
     print("\\\\")
     
 def print_model(model):
