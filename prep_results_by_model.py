@@ -43,12 +43,12 @@ LANG_MAP = {
         "Javascript": ["C++", "Java", "Python", "Rust", "Go"],
     },
     "codenetintertrans": {
-        "C++": ["Java", "Python", "Go"],
-        "Java": ["C++", "Python", "Go"],
-        "Python": ["C++", "Java", "Go"],
-        "Go": ["C++", "Java", "Python"],
-        "Rust": ["C", "C++", "Java", "Python"],
-        "Javascript": ["C", "C++", "Java", "Python"],
+        "C++": ["Java", "Python", "Go", "Javascript", "Rust"],
+        "Java": ["C++", "Python", "Go", "Javascript", "Rust"],
+        "Python": ["C++", "Java", "Go", "Javascript", "Rust"],
+        "Go": ["C++", "Java", "Python", "Javascript", "Rust"],
+        "Rust": ["C", "C++", "Java", "Python", "Javascript"],
+        "Javascript": ["C", "C++", "Java", "Python", "Rust"],
     },
     "evalplus": {
         "Python": ["Java"],
