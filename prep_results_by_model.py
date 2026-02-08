@@ -42,14 +42,14 @@ LANG_MAP = {
         "Go": ["C++", "Java", "Python", "Rust", "Javascript"],
         "Javascript": ["C++", "Java", "Python", "Rust", "Go"],
     },
-    # "codenetintertrans": {
-    #     "C++": ["Java", "Python", "Go"],
-    #     "Java": ["C++", "Python", "Go"],
-    #     "Python": ["C++", "Java", "Go"],
-    #     "Go": ["C++", "Java", "Python"],
-    #     "Rust": ["C", "C++", "Java", "Python"],
-    #     "Javascript": ["C", "C++", "Java", "Python"],
-    # },
+    "codenetintertrans": {
+        "C++": ["Java", "Python", "Go"],
+        "Java": ["C++", "Python", "Go"],
+        "Python": ["C++", "Java", "Go"],
+        "Go": ["C++", "Java", "Python"],
+        "Rust": ["C", "C++", "Java", "Python"],
+        "Javascript": ["C", "C++", "Java", "Python"],
+    },
     "evalplus": {
         "Python": ["Java"],
     },
@@ -73,28 +73,46 @@ def get_file_path_trans(model, trans_type, dataset, src_lang, tl):
         return path
     return None
 
+def count_corrects(file_path):
+    with open(file_path, "r") as f:
+        lines = [l.strip() for l in f.readlines()]                        
+        for l in lines:
+          if l.startswith("Total Instances:"):
+            incorrects = int(l.split(":")[-1].strip())
+          elif l.startswith("Total Correct:"):
+            corrects = int(l.split(":")[-1].strip())
+        return (total_per_lang - incorrects + corrects)        
+
 def get_score_lang_pair(model, trans_type, dataset, src_lang):
     total_per_lang = DATASET_INSTANCES[dataset]
     n_tl = 0
-    total_corrects = 0
+    total_corrects_fixed = 0
+    total_corrects_trans = 0
+    
     for tl in LANG_MAP[dataset][src_lang]:
-        file_path = get_file_path(model, trans_type, dataset, src_lang, tl)
-        if file_path is not None:
+        file_path_fixed = get_file_path_fixed(model, trans_type, dataset, src_lang, tl)
+        file_path_trans = get_file_path_trans(model, trans_type, dataset, src_lang, tl)
+        if file_path_fixed is not None:
             n_tl += 1
-            with open(file_path, "r") as f:
-                lines = [l.strip() for l in f.readlines()]                        
-                for l in lines:
-                  if l.startswith("Total Instances:"):
-                    incorrects = int(l.split(":")[-1].strip())
-                  elif l.startswith("Total Correct:"):
-                    corrects = int(l.split(":")[-1].strip())
-                total_corrects += (total_per_lang - incorrects + corrects)
+            total_corrects_fixed += count_corrects_fixed(file_path_fixed)
+            total_corrects_trans += count_corrects_trans(file_path_trans)
+            
+            # with open(file_path, "r") as f:
+            #     lines = [l.strip() for l in f.readlines()]                        
+            #     for l in lines:
+            #       if l.startswith("Total Instances:"):
+            #         incorrects = int(l.split(":")[-1].strip())
+            #       elif l.startswith("Total Correct:"):
+            #         corrects = int(l.split(":")[-1].strip())
+            #     total_corrects += (total_per_lang - incorrects + corrects)
         else:
             # print("file not found", file_path)
             continue
     if n_tl < 1:
         return "-1"
-    return round(100 * total_corrects/(n_tl*total_per_lang), 2)
+    fixed_score = round(100 * total_corrects_fixed/(n_tl*total_per_lang), 2)
+    trans_score = round(100 * total_corrects_trans/(n_tl*total_per_lang), 2)
+    return f"{fixed_score}//% {trans_score}\\%$\\uparrow$"
             
 
 # print(get_score_lang_pair("magicoder", "translation_source", "codenet", "Python"))
@@ -104,53 +122,21 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 
 # exit(0)
 
-def print_latex_row(dataset_key, dataset_cell, src_lang, tgt_langs):
-    # print("print_latex_row")
-    cells = []
-
-    # Printed columns
-    cells.append(dataset_cell)
-    cells.append(src_lang)
-    # cells.append(", ".join(tgt_langs))
-
-    # Model × Prompt source results
-    for model in MODELS:
-        for trans in TRANS_TYPES:
-            try:
-                score = get_score_lang_pair(
-                    model=model,
-                    trans_type=trans,
-                    dataset=dataset_key,   # ALWAYS valid
-                    src_lang=src_lang,
-                )
-                cells.append(f"{score:.2f}")
-            except Exception:
-                cells.append("-")
-
-    print(" & ".join(cells) + r" \\")
-
-
-def print_latex_table_body():
-    print("print_latex_table_body")
+def print_latex_row(model, dataset, src_lang):
+    print(model, dataset, src_lang, end=" || ")
+    for trans in TRANS_TYPES:
+        try:
+            cell = get_score_lang_pair(model, trans_type, dataset, src_lang)
+            print(cell, end=" & ")
+        except:
+            print("-", end=" & ")
+    print("\\")
+    
+def print_model(model):
     for dataset in DATASETS:
-        first_row = True
-
         for src_lang, tgt_langs in LANG_MAP[dataset].items():
-            if first_row:
-                dataset_cell = dataset.capitalize()
-                first_row = False
-            else:
-                dataset_cell = ""   # visual grouping only
-
-            print_latex_row(
-                dataset_key=dataset,
-                dataset_cell=dataset_cell,
-                src_lang=src_lang,
-                tgt_langs=tgt_langs,
-            )
-
-        print(r"\hline")
-
-
-if __name__ == "__main__":
-    print_latex_table_body()
+            print_latex_row(model, dataset, src_lang)
+                
+print_model("magicoder")
+print("="*50)
+print_model("deepseek")
