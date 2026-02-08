@@ -95,8 +95,8 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
         file_path_trans = get_file_path_trans(model, trans_type, dataset, src_lang, tl)
         if file_path_fixed is not None:
             n_tl += 1
-            total_corrects_fixed += count_corrects_fixed(file_path_fixed)
-            total_corrects_trans += count_corrects_trans(file_path_trans)
+            total_corrects_fixed += count_corrects(file_path_fixed)
+            total_corrects_trans += count_corrects(file_path_trans)
         else:
             print("file not found", file_path)
             continue
