@@ -118,7 +118,7 @@ def get_score_lang_pair(model, trans_type, dataset, src_lang):
 
 def print_latex_row(model, dataset, src_lang):
     print(model, dataset, src_lang, end=" || ")
-    for trans in TRANS_TYPES:
+    for trans_type in TRANS_TYPES:
         cell = get_score_lang_pair(model, trans_type, dataset, src_lang)
         print(cell, end=" & ")
     print("\\\\")
