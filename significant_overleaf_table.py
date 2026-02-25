@@ -7,11 +7,11 @@ MODEL = "deepseek"
 
 
 # def fmt_p(p: float) -> str:
-    if p < 1e-4:
-        return f"{p:.2e}"
-    if p == 1:
-        return "1"
-    return f"{p:.4g}"
+#     if p < 1e-4:
+#         return f"{p:.2e}"
+#     if p == 1:
+#         return "1"
+#     return f"{p:.4g}"
 
 def fmt_p(p: float, alpha: float = 0.05) -> str:
     """
