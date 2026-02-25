@@ -125,8 +125,8 @@ def generate_latex_table(rows):
         "regressions ($b$) = problems solved by the first method but not by the second. "
         "$p$-values are computed using McNemar’s exact test on paired per-problem outcomes ($\\\\alpha$ = 0.05). "
         "Union comparisons quantify the combining effect using McNemar’s exact test between SC and an OR-ensemble of the other strategies. "
-        "Cells shaded in light green indicate statistically significant improvements over SC ($p<0.05$ and $c>b$), " 
-        "while light red indicates statistically significant degradations ($p<0.05$ and $c<b$)."
+        "Cells shaded in green indicate statistically significant improvements over SC ($p<0.05$ and $c>b$), " 
+        "while red indicates statistically significant degradations ($p<0.05$ and $c<b$)."
     )
     lines.append("}")
 
