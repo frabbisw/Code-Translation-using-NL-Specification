@@ -167,7 +167,7 @@ def generate_latex_table(rows):
 
     lines.append("\\end{tabular}")
     lines.append("}")
-    lines.append("\\label{tab:significance_result_union_mcnemar}")
+    lines.append("\\label{tab:significance_result}")
     lines.append("\\end{table*}")
 
     return "\n".join(lines)
