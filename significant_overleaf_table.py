@@ -26,7 +26,7 @@ def fmt_p(p: float, alpha: float = 0.05) -> str:
 
     # highlight significant cells
     if p < alpha:
-        return f"\\cellcolor{{gray!20}}{s}"
+        return f"\\cellcolor{{gray!20}}{{{s}}}"
     return s
 
 def fmt_cb(c: int, b: int) -> str:
