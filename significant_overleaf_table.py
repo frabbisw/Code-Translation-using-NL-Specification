@@ -6,13 +6,28 @@ INPUT_JSON = "sig_test_data_all/summary_all.json"
 MODEL = "deepseek"
 
 
-def fmt_p(p: float) -> str:
+# def fmt_p(p: float) -> str:
     if p < 1e-4:
         return f"{p:.2e}"
     if p == 1:
         return "1"
     return f"{p:.4g}"
 
+def fmt_p(p: float, alpha: float = 0.05) -> str:
+    """
+    Format p-value to 2 decimals and highlight significant values
+    with light gray background.
+    """
+    # formatting
+    if p < 0.005:
+        s = "<0.01"
+    else:
+        s = f"{p:.2f}"
+
+    # highlight significant cells
+    if p < alpha:
+        return f"\\cellcolor{{gray!20}}{s}"
+    return s
 
 def fmt_cb(c: int, b: int) -> str:
     return f"{c}/{b}"
@@ -101,10 +116,7 @@ def generate_latex_table(rows):
 
     lines.append("\\resizebox{\\textwidth}{!}{")
     lines.append(
-        "\\begin{tabular}{|m{1.4cm}|m{1.8cm}|m{1.0cm}|"
-        "m{1.2cm}|m{1.2cm}|"
-        "m{1.4cm}|m{1.4cm}|"
-        "m{1.8cm}|m{1.4cm}|}"
+        "\\begin{tabular}{|m{1.4cm}|m{1.8cm}|m{1.0cm}|m{1.2cm}|m{1.0cm}|m{1.4cm}|m{1.0cm}|m{1.8cm}|m{1.0cm}|m{2.2cm}|m{1.0cm}|}"
     )
     lines.append("\\hline")
 
