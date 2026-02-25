@@ -4,7 +4,6 @@ from pathlib import Path
 
 INPUT_JSON = "sig_test_data_all/summary_all.json"
 MODEL = "deepseek"
-ALPHA = 0.05
 
 
 def fmt_p(p: float) -> str:
@@ -19,10 +18,6 @@ def fmt_cb(c: int, b: int) -> str:
     return f"{c}/{b}"
 
 
-def fmt_rate_pct(r: float) -> str:
-    return f"{r * 100:.1f}"
-
-
 def latex_escape(s: str) -> str:
     return s.replace("_", "\\_")
 
@@ -30,28 +25,6 @@ def latex_escape(s: str) -> str:
 def load_data():
     with open(INPUT_JSON, "r", encoding="utf-8") as f:
         return json.load(f)[MODEL]
-
-
-def get_required_union_tests(stats: dict) -> dict:
-    """
-    Expects:
-      stats["mcnemar_union"]["sc_vs_nl_or_nl_source"] = {p_value, regressions_b, fixes_c}
-      stats["mcnemar_union"]["sc_vs_sc_or_nl_or_nl_source"] = {p_value, regressions_b, fixes_c}
-    """
-    if "mcnemar_union" not in stats:
-        raise KeyError(
-            "Missing key 'mcnemar_union' in JSON stats. "
-            "You need to compute and store McNemar results for union comparisons:\n"
-            "  - sc_vs_nl_or_nl_source\n"
-            "  - sc_vs_sc_or_nl_or_nl_source"
-        )
-
-    mu = stats["mcnemar_union"]
-    for k in ["sc_vs_nl_or_nl_source", "sc_vs_sc_or_nl_or_nl_source"]:
-        if k not in mu:
-            raise KeyError(f"Missing stats['mcnemar_union']['{k}'] in JSON.")
-
-    return mu
 
 
 def generate_rows(data):
@@ -64,22 +37,26 @@ def generate_rows(data):
                     continue
 
                 total = stats["source"]["n"]
-                sc_rate = stats["source"]["rate"]
 
-                # Existing McNemar (pairwise)
+                # original McNemar
                 m_sc_nl = stats["mcnemar"]["source_vs_nl"]
                 m_sc_nls = stats["mcnemar"]["source_vs_nl_source"]
 
-                # New: union McNemar (required)
-                mu = get_required_union_tests(stats)
-                m_sc_vs_union_nl_nls = mu["sc_vs_nl_or_nl_source"]
-                m_sc_vs_union_all3 = mu["sc_vs_sc_or_nl_or_nl_source"]
+                # union McNemar tests (must exist in JSON now)
+                if "mcnemar_union" not in stats:
+                    raise KeyError(
+                        "Missing 'mcnemar_union' in JSON. "
+                        "Please regenerate summary_all.json with new metrics "
+                        "that include sc_vs_nl_or_nl_source and sc_vs_sc_or_nl_or_nl_source."
+                    )
+                mu = stats["mcnemar_union"]
+                m_sc_u_nl_nls = mu["sc_vs_nl_or_nl_source"]
+                m_sc_u_all3 = mu["sc_vs_sc_or_nl_or_nl_source"]
 
                 row = {
                     "dataset": dataset,
                     "pair": f"{src}$\\rightarrow${tgt}",
                     "total": total,
-                    "sc_rate": fmt_rate_pct(sc_rate),
 
                     "p_sc_nl": fmt_p(m_sc_nl["p_value"]),
                     "cb_sc_nl": fmt_cb(m_sc_nl["fixes_c"], m_sc_nl["regressions_b"]),
@@ -87,16 +64,17 @@ def generate_rows(data):
                     "p_sc_nls": fmt_p(m_sc_nls["p_value"]),
                     "cb_sc_nls": fmt_cb(m_sc_nls["fixes_c"], m_sc_nls["regressions_b"]),
 
-                    "p_sc_union_nl_nls": fmt_p(m_sc_vs_union_nl_nls["p_value"]),
-                    "cb_sc_union_nl_nls": fmt_cb(
-                        m_sc_vs_union_nl_nls["fixes_c"], m_sc_vs_union_nl_nls["regressions_b"]
+                    "p_sc_u_nl_nls": fmt_p(m_sc_u_nl_nls["p_value"]),
+                    "cb_sc_u_nl_nls": fmt_cb(
+                        m_sc_u_nl_nls["fixes_c"], m_sc_u_nl_nls["regressions_b"]
                     ),
 
-                    "p_sc_union_all3": fmt_p(m_sc_vs_union_all3["p_value"]),
-                    "cb_sc_union_all3": fmt_cb(
-                        m_sc_vs_union_all3["fixes_c"], m_sc_vs_union_all3["regressions_b"]
+                    "p_sc_u_all3": fmt_p(m_sc_u_all3["p_value"]),
+                    "cb_sc_u_all3": fmt_cb(
+                        m_sc_u_all3["fixes_c"], m_sc_u_all3["regressions_b"]
                     ),
                 }
+
                 rows[dataset].append(row)
 
     return rows
@@ -104,6 +82,7 @@ def generate_rows(data):
 
 def generate_latex_table(rows):
     lines = []
+
     lines.append("\\begin{table*}")
     lines.append("\\color{blue}")
     lines.append("\\centering")
@@ -115,22 +94,22 @@ def generate_latex_table(rows):
         "SC = source-only translation, NL = translation using \\specS, SL = source language, TL = target languages. "
         "Fixes ($c$) = problems solved by the second method but not by the first, regressions ($b$) = problems solved by "
         "the first method but not by the second. $p$-values are computed using McNemar’s exact test on paired per-problem "
-        "outcomes ($\\alpha$ = 0.05). "
-        "Union columns use McNemar’s exact test to quantify whether combining strategies (OR ensemble) yields statistically "
-        "significant gains over SC."
+        "outcomes ($\\alpha$ = 0.05). Union comparisons quantify the combining effect using McNemar’s exact test between SC "
+        "and an OR-ensemble of the other strategies."
     )
     lines.append("}")
 
     lines.append("\\resizebox{\\textwidth}{!}{")
     lines.append(
-        "\\begin{tabular}{|m{1.2cm}|m{1.7cm}|m{1.0cm}|m{1.1cm}|"
-        "m{1.05cm}|m{0.9cm}|m{1.15cm}|m{0.9cm}|"
-        "m{1.35cm}|m{0.9cm}|m{1.55cm}|m{0.9cm}|}"
+        "\\begin{tabular}{|m{1.4cm}|m{1.8cm}|m{1.0cm}|"
+        "m{1.2cm}|m{1.2cm}|"
+        "m{1.4cm}|m{1.4cm}|"
+        "m{1.8cm}|m{1.4cm}|}"
     )
     lines.append("\\hline")
+
     lines.append(
         "\\textbf{Dataset} & \\textbf{SL$\\rightarrow$TL} & \\textbf{Total} & "
-        "\\textbf{SC (\\%)} & "
         "\\textbf{p (SC vs NL)} & \\textbf{c/b} & "
         "\\textbf{p (SC vs NL+SC)} & \\textbf{c/b} & "
         "\\textbf{p (SC vs NL$\\cup$(NL+SC))} & \\textbf{c/b} & "
@@ -138,21 +117,22 @@ def generate_latex_table(rows):
     )
     lines.append("\\hline")
 
-    # stable ordering
     for dataset in sorted(rows.keys()):
-        ds_rows = sorted(rows[dataset], key=lambda x: x["pair"])
+        ds_rows = sorted(rows[dataset], key=lambda r: r["pair"])
         multirow = len(ds_rows)
 
         for i, r in enumerate(ds_rows):
             base = (
-                f"{r['pair']} & {r['total']} & {r['sc_rate']} & "
+                f"{r['pair']} & {r['total']} & "
                 f"{r['p_sc_nl']} & {r['cb_sc_nl']} & "
                 f"{r['p_sc_nls']} & {r['cb_sc_nls']} & "
-                f"{r['p_sc_union_nl_nls']} & {r['cb_sc_union_nl_nls']} & "
-                f"{r['p_sc_union_all3']} & {r['cb_sc_union_all3']} \\\\"
+                f"{r['p_sc_u_nl_nls']} & {r['cb_sc_u_nl_nls']} & "
+                f"{r['p_sc_u_all3']} & {r['cb_sc_u_all3']} \\\\"
             )
             if i == 0:
-                lines.append(f"\\multirow{{{multirow}}}{{*}}{{{latex_escape(dataset.capitalize())}}} & {base}")
+                lines.append(
+                    f"\\multirow{{{multirow}}}{{*}}{{{latex_escape(dataset.capitalize())}}} & {base}"
+                )
             else:
                 lines.append(f" & {base}")
 
