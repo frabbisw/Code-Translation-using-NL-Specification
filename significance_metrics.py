@@ -45,14 +45,29 @@ def bootstrap_ci(x: np.ndarray, n: int = 10000, alpha: float = 0.05, seed: int =
 def mcnemar_exact(a: np.ndarray, b: np.ndarray) -> Tuple[float, int, int]:
     """
     a,b are binary success arrays (1=success, 0=failure)
-    regressions b_reg: a=1,b=0
-    fixes       c_fix: a=0,b=1
+
+    Returns:
+      p_value,
+      regressions_b = count(a=1, b=0),
+      fixes_c       = count(a=0, b=1)
+
+    IMPORTANT: statsmodels expects the FULL 2x2 table:
+      [[n11, n10],
+       [n01, n00]]
+    where:
+      n11: both succeed
+      n10: a succeed, b fail   (regressions)
+      n01: a fail, b succeed   (fixes)
+      n00: both fail
     """
-    b_reg = int(((a == 1) & (b == 0)).sum())
-    c_fix = int(((a == 0) & (b == 1)).sum())
-    table = [[0, b_reg], [c_fix, 0]]
+    n11 = int(((a == 1) & (b == 1)).sum())
+    n10 = int(((a == 1) & (b == 0)).sum())  # regressions
+    n01 = int(((a == 0) & (b == 1)).sum())  # fixes
+    n00 = int(((a == 0) & (b == 0)).sum())
+
+    table = [[n11, n10], [n01, n00]]
     p = float(mcnemar(table, exact=True).pvalue)
-    return p, b_reg, c_fix
+    return p, n10, n01
 
 
 def _rate_ci(arr: np.ndarray, seed: int = 0) -> Dict[str, float]:
@@ -111,11 +126,12 @@ def run_metrics(
       - McNemar exact p-values (paired) for all pairs
       - Union rates + CI
       - Complementarity
-      - NEW: McNemar tests for unions:
+      - McNemar tests for union/combining effect:
           SC vs (NL ∪ NL+SC)
           SC vs (SC ∪ NL ∪ NL+SC)
     """
     ids = load_universe(universe_txt)
+
     src_fail = load_fail_set(source_fail_json)
     nl_fail = load_fail_set(nl_fail_json)
     nls_fail = load_fail_set(nl_source_fail_json)
@@ -135,12 +151,12 @@ def run_metrics(
     p_nl_nls, b_nl_nls, c_nl_nls = mcnemar_exact(nl, nls)
 
     # Unions
-    union_all3 = _union(src, nl, nls)          # SC ∪ NL ∪ (NL+SC)
-    union_nl_nls = _union(nl, nls)             # NL ∪ (NL+SC)
-    union_src_nl = _union(src, nl)             # SC ∪ NL
-    union_src_nls = _union(src, nls)           # SC ∪ (NL+SC)
+    union_all3 = _union(src, nl, nls)     # SC ∪ NL ∪ (NL+SC)  (cannot be worse than SC)
+    union_nl_nls = _union(nl, nls)        # NL ∪ (NL+SC)       (can be worse than SC)
+    union_src_nl = _union(src, nl)
+    union_src_nls = _union(src, nls)
 
-    # ✅ NEW: McNemar on union outcomes (what your table now expects)
+    # Union McNemar (combining effect)
     p_sc_u_nl_nls, b_sc_u_nl_nls, c_sc_u_nl_nls = mcnemar_exact(src, union_nl_nls)
     p_sc_u_all3, b_sc_u_all3, c_sc_u_all3 = mcnemar_exact(src, union_all3)
 
@@ -151,24 +167,36 @@ def run_metrics(
             "nl": int(len(nl_fail)),
             "nl_source": int(len(nls_fail)),
         },
-
         "source": src_stats,
         "nl": nl_stats,
         "nl_source": nls_stats,
-
         "mcnemar": {
-            "source_vs_nl": {"p_value": p_src_nl, "regressions_b": b_src_nl, "fixes_c": c_src_nl},
-            "source_vs_nl_source": {"p_value": p_src_nls, "regressions_b": b_src_nls, "fixes_c": c_src_nls},
-            "nl_vs_nl_source": {"p_value": p_nl_nls, "regressions_b": b_nl_nls, "fixes_c": c_nl_nls},
+            "source_vs_nl": {
+                "p_value": p_src_nl,
+                "regressions_b": b_src_nl,
+                "fixes_c": c_src_nl,
+            },
+            "source_vs_nl_source": {
+                "p_value": p_src_nls,
+                "regressions_b": b_src_nls,
+                "fixes_c": c_src_nls,
+            },
+            "nl_vs_nl_source": {
+                "p_value": p_nl_nls,
+                "regressions_b": b_nl_nls,
+                "fixes_c": c_nl_nls,
+            },
         },
 
-        # ✅ NEW KEY (used by your updated overleaf table script)
+        # NEW: what your table expects
         "mcnemar_union": {
+            # SC vs (NL ∪ NL+SC)
             "sc_vs_nl_or_nl_source": {
                 "p_value": p_sc_u_nl_nls,
                 "regressions_b": b_sc_u_nl_nls,
                 "fixes_c": c_sc_u_nl_nls,
             },
+            # SC vs (SC ∪ NL ∪ NL+SC)  -> regressions_b should ALWAYS be 0
             "sc_vs_sc_or_nl_or_nl_source": {
                 "p_value": p_sc_u_all3,
                 "regressions_b": b_sc_u_all3,
@@ -201,5 +229,4 @@ def run_metrics(
             },
         },
     }
-
     return out
