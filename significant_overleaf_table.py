@@ -1,35 +1,36 @@
+# significant_overleaf_table.py
 import json
 from collections import defaultdict
 from pathlib import Path
 
 INPUT_JSON = "sig_test_data_all/summary_all.json"
 MODEL = "deepseek"
+ALPHA = 0.05
 
 
-# def fmt_p(p: float) -> str:
-#     if p < 1e-4:
-#         return f"{p:.2e}"
-#     if p == 1:
-#         return "1"
-#     return f"{p:.4g}"
+def fmt_rate(r: float) -> str:
+    """Format correctness percentage"""
+    return f"{100 * r:.1f}"
 
-def fmt_p(p: float, alpha: float = 0.05) -> str:
+
+def fmt_p_improvement_only(p: float, fixes_c: int, regressions_b: int, alpha: float = ALPHA) -> str:
     """
-    Format p-values to 2 decimals.
-    Use math-mode < for very small p-values.
-    Highlight significant cells in light gray.
+    Format p-value to 2 decimals and shade (light gray) ONLY if:
+      - statistically significant (p < alpha), AND
+      - the second method is better (fixes_c > regressions_b)
     """
     if p < 0.005:
         s = "$<0.01$"
     else:
         s = f"{p:.2f}"
 
-    if p < alpha:
+    if (p < alpha) and (fixes_c > regressions_b):
         return f"\\cellcolor{{gray!20}}{{{s}}}"
     return s
 
-def fmt_cb(c: int, b: int) -> str:
-    return f"{c}/{b}"
+
+def fmt_cb(fixes_c: int, regressions_b: int) -> str:
+    return f"{fixes_c}/{regressions_b}"
 
 
 def latex_escape(s: str) -> str:
@@ -50,19 +51,17 @@ def generate_rows(data):
                 if not isinstance(stats, dict) or "error" in stats:
                     continue
 
-                total = stats["source"]["n"]
+                sc_rate = stats["source"]["rate"]
 
-                # original McNemar
                 m_sc_nl = stats["mcnemar"]["source_vs_nl"]
                 m_sc_nls = stats["mcnemar"]["source_vs_nl_source"]
 
-                # union McNemar tests (must exist in JSON now)
                 if "mcnemar_union" not in stats:
                     raise KeyError(
-                        "Missing 'mcnemar_union' in JSON. "
-                        "Please regenerate summary_all.json with new metrics "
-                        "that include sc_vs_nl_or_nl_source and sc_vs_sc_or_nl_or_nl_source."
+                        f"Missing 'mcnemar_union' in JSON for {MODEL}/{dataset}/{src}->{tgt}. "
+                        "Re-run run_all_stats.py after updating significance_metrics.py."
                     )
+
                 mu = stats["mcnemar_union"]
                 m_sc_u_nl_nls = mu["sc_vs_nl_or_nl_source"]
                 m_sc_u_all3 = mu["sc_vs_sc_or_nl_or_nl_source"]
@@ -70,20 +69,32 @@ def generate_rows(data):
                 row = {
                     "dataset": dataset,
                     "pair": f"{src}$\\rightarrow${tgt}",
-                    "total": total,
+                    "sc_rate": fmt_rate(sc_rate),
 
-                    "p_sc_nl": fmt_p(m_sc_nl["p_value"]),
+                    "p_sc_nl": fmt_p_improvement_only(
+                        m_sc_nl["p_value"], m_sc_nl["fixes_c"], m_sc_nl["regressions_b"]
+                    ),
                     "cb_sc_nl": fmt_cb(m_sc_nl["fixes_c"], m_sc_nl["regressions_b"]),
 
-                    "p_sc_nls": fmt_p(m_sc_nls["p_value"]),
+                    "p_sc_nls": fmt_p_improvement_only(
+                        m_sc_nls["p_value"], m_sc_nls["fixes_c"], m_sc_nls["regressions_b"]
+                    ),
                     "cb_sc_nls": fmt_cb(m_sc_nls["fixes_c"], m_sc_nls["regressions_b"]),
 
-                    "p_sc_u_nl_nls": fmt_p(m_sc_u_nl_nls["p_value"]),
+                    "p_sc_u_nl_nls": fmt_p_improvement_only(
+                        m_sc_u_nl_nls["p_value"],
+                        m_sc_u_nl_nls["fixes_c"],
+                        m_sc_u_nl_nls["regressions_b"],
+                    ),
                     "cb_sc_u_nl_nls": fmt_cb(
                         m_sc_u_nl_nls["fixes_c"], m_sc_u_nl_nls["regressions_b"]
                     ),
 
-                    "p_sc_u_all3": fmt_p(m_sc_u_all3["p_value"]),
+                    "p_sc_u_all3": fmt_p_improvement_only(
+                        m_sc_u_all3["p_value"],
+                        m_sc_u_all3["fixes_c"],
+                        m_sc_u_all3["regressions_b"],
+                    ),
                     "cb_sc_u_all3": fmt_cb(
                         m_sc_u_all3["fixes_c"], m_sc_u_all3["regressions_b"]
                     ),
@@ -105,26 +116,31 @@ def generate_latex_table(rows):
     lines.append("\\caption{\\color{blue}")
     lines.append(
         "Paired significance and complementarity analysis across datasets and language pairs on DeepSeekCoder result. "
-        "SC = source-only translation, NL = translation using \\specS, SL = source language, TL = target languages. "
-        "Fixes ($c$) = problems solved by the second method but not by the first, regressions ($b$) = problems solved by "
-        "the first method but not by the second. $p$-values are computed using McNemar’s exact test on paired per-problem "
-        "outcomes ($\\alpha$ = 0.05). Union comparisons quantify the combining effect using McNemar’s exact test between SC "
-        "and an OR-ensemble of the other strategies."
+        "SC = source-only translation, NL = translation using \\\\specS, SL = source language, TL = target languages. "
+        "Fixes ($c$) = problems solved by the second method but not by the first, "
+        "regressions ($b$) = problems solved by the first method but not by the second. "
+        "$p$-values are computed using McNemar’s exact test on paired per-problem outcomes ($\\\\alpha$ = 0.05). "
+        "Union comparisons quantify the combining effect using McNemar’s exact test between SC and an OR-ensemble of the other strategies. "
+        "Cells shaded in light gray indicate statistically significant improvements over SC ($p<0.05$ and $c>b$)."
     )
     lines.append("}")
 
     lines.append("\\resizebox{\\textwidth}{!}{")
     lines.append(
-        "\\begin{tabular}{|m{1.4cm}|m{1.8cm}|m{1.0cm}|m{1.2cm}|m{1.0cm}|m{1.4cm}|m{1.0cm}|m{1.8cm}|m{1.0cm}|m{2.2cm}|m{1.0cm}|}"
+        "\\begin{tabular}{|m{1.4cm}|m{1.8cm}|m{1.2cm}|"
+        "m{1.2cm}|m{1.0cm}|"
+        "m{1.4cm}|m{1.0cm}|"
+        "m{1.8cm}|m{1.0cm}|"
+        "m{2.2cm}|m{1.0cm}|}"
     )
     lines.append("\\hline")
 
     lines.append(
-        "\\textbf{Dataset} & \\textbf{SL$\\rightarrow$TL} & \\textbf{Total} & "
+        "\\textbf{Dataset} & \\textbf{SL$\\rightarrow$TL} & \\textbf{SC (\\%)} & "
         "\\textbf{p (SC vs NL)} & \\textbf{c/b} & "
         "\\textbf{p (SC vs NL+SC)} & \\textbf{c/b} & "
-        "\\textbf{p (SC vs NL$\\cup$(NL+SC))} & \\textbf{c/b} & "
-        "\\textbf{p (SC vs SC$\\cup$NL$\\cup$(NL+SC))} & \\textbf{c/b} \\\\"
+        "\\textbf{p (SC vs NL $\\cup$(NL+SC))} & \\textbf{c/b} & "
+        "\\textbf{p (SC vs SC$\\cup$ NL$\\cup$(NL+SC))} & \\textbf{c/b} \\\\"
     )
     lines.append("\\hline")
 
@@ -134,7 +150,7 @@ def generate_latex_table(rows):
 
         for i, r in enumerate(ds_rows):
             base = (
-                f"{r['pair']} & {r['total']} & "
+                f"{r['pair']} & {r['sc_rate']} & "
                 f"{r['p_sc_nl']} & {r['cb_sc_nl']} & "
                 f"{r['p_sc_nls']} & {r['cb_sc_nls']} & "
                 f"{r['p_sc_u_nl_nls']} & {r['cb_sc_u_nl_nls']} & "
@@ -162,7 +178,7 @@ def main():
     rows = generate_rows(data)
     latex = generate_latex_table(rows)
 
-    out_path = Path("significance_table_union_mcnemar_only.tex")
+    out_path = Path("significance_table_union_mcnemar_with_sc_rate.tex")
     out_path.write_text(latex, encoding="utf-8")
     print(f"Wrote: {out_path}")
 
