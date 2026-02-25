@@ -24,8 +24,9 @@ def fmt_p_improvement_only(p: float, fixes_c: int, regressions_b: int, alpha: fl
     else:
         s = f"{p:.2f}"
 
-    if (p < alpha) and (fixes_c > regressions_b):
-        return f"\\cellcolor{{gray!20}}{{{s}}}"
+    # if (p < alpha) and (fixes_c > regressions_b): # if only to show the significance and better
+    if (p < alpha):        
+        return f"\\cellcolor{{gray!40}}{{{s}}}"
     return s
 
 
