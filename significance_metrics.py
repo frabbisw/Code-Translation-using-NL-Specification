@@ -1,6 +1,5 @@
 # significance_metrics.py
 import json
-from pathlib import Path
 from typing import Dict, List, Set, Tuple, Any
 
 import numpy as np
@@ -99,14 +98,22 @@ def complementarity(a: np.ndarray, b: np.ndarray) -> Dict[str, Any]:
     }
 
 
-def run_metrics(universe_txt: str, source_fail_json: str, nl_fail_json: str, nl_source_fail_json: str,
-                seed: int = 0) -> Dict[str, Any]:
+def run_metrics(
+    universe_txt: str,
+    source_fail_json: str,
+    nl_fail_json: str,
+    nl_source_fail_json: str,
+    seed: int = 0,
+) -> Dict[str, Any]:
     """
     Returns a dict with:
       - success rates + bootstrap 95% CI for source/nl/nl_source
       - McNemar exact p-values (paired) for all pairs
-      - Complementarity / union stats:
-          union_all3, union_nl_and_nl_source, union_source_and_nl, etc.
+      - Union rates + CI
+      - Complementarity
+      - NEW: McNemar tests for unions:
+          SC vs (NL ∪ NL+SC)
+          SC vs (SC ∪ NL ∪ NL+SC)
     """
     ids = load_universe(universe_txt)
     src_fail = load_fail_set(source_fail_json)
@@ -122,20 +129,28 @@ def run_metrics(universe_txt: str, source_fail_json: str, nl_fail_json: str, nl_
     nl_stats = _rate_ci(nl, seed=seed)
     nls_stats = _rate_ci(nls, seed=seed)
 
-    # McNemar
+    # Pairwise McNemar
     p_src_nl, b_src_nl, c_src_nl = mcnemar_exact(src, nl)
     p_src_nls, b_src_nls, c_src_nls = mcnemar_exact(src, nls)
     p_nl_nls, b_nl_nls, c_nl_nls = mcnemar_exact(nl, nls)
 
-    # Complementarity / unions
-    union_all3 = _union(src, nl, nls)
-    union_nl_nls = _union(nl, nls)
-    union_src_nl = _union(src, nl)
-    union_src_nls = _union(src, nls)
+    # Unions
+    union_all3 = _union(src, nl, nls)          # SC ∪ NL ∪ (NL+SC)
+    union_nl_nls = _union(nl, nls)             # NL ∪ (NL+SC)
+    union_src_nl = _union(src, nl)             # SC ∪ NL
+    union_src_nls = _union(src, nls)           # SC ∪ (NL+SC)
+
+    # ✅ NEW: McNemar on union outcomes (what your table now expects)
+    p_sc_u_nl_nls, b_sc_u_nl_nls, c_sc_u_nl_nls = mcnemar_exact(src, union_nl_nls)
+    p_sc_u_all3, b_sc_u_all3, c_sc_u_all3 = mcnemar_exact(src, union_all3)
 
     out: Dict[str, Any] = {
         "universe_n": int(len(ids)),
-        "failures": {"source": int(len(src_fail)), "nl": int(len(nl_fail)), "nl_source": int(len(nls_fail))},
+        "failures": {
+            "source": int(len(src_fail)),
+            "nl": int(len(nl_fail)),
+            "nl_source": int(len(nls_fail)),
+        },
 
         "source": src_stats,
         "nl": nl_stats,
@@ -147,12 +162,25 @@ def run_metrics(universe_txt: str, source_fail_json: str, nl_fail_json: str, nl_
             "nl_vs_nl_source": {"p_value": p_nl_nls, "regressions_b": b_nl_nls, "fixes_c": c_nl_nls},
         },
 
-        # Supervisor-requested "combining effect" / complementarity
+        # ✅ NEW KEY (used by your updated overleaf table script)
+        "mcnemar_union": {
+            "sc_vs_nl_or_nl_source": {
+                "p_value": p_sc_u_nl_nls,
+                "regressions_b": b_sc_u_nl_nls,
+                "fixes_c": c_sc_u_nl_nls,
+            },
+            "sc_vs_sc_or_nl_or_nl_source": {
+                "p_value": p_sc_u_all3,
+                "regressions_b": b_sc_u_all3,
+                "fixes_c": c_sc_u_all3,
+            },
+        },
+
         "union": {
             "source_or_nl": _rate_ci(union_src_nl, seed=seed),
             "source_or_nl_source": _rate_ci(union_src_nls, seed=seed),
-            "nl_or_nl_source": _rate_ci(union_nl_nls, seed=seed),         # requested: latter two
-            "source_or_nl_or_nl_source": _rate_ci(union_all3, seed=seed), # requested: all three
+            "nl_or_nl_source": _rate_ci(union_nl_nls, seed=seed),
+            "source_or_nl_or_nl_source": _rate_ci(union_all3, seed=seed),
         },
 
         "complementarity": {
@@ -160,7 +188,6 @@ def run_metrics(universe_txt: str, source_fail_json: str, nl_fail_json: str, nl_
             "source_vs_nl_source": complementarity(src, nls),
             "nl_vs_nl_source": complementarity(nl, nls),
             "nl_or_nl_source_vs_source": {
-                # how much (nl OR nls) adds beyond source alone
                 "union_rate": float(union_nl_nls.mean()),
                 "source_rate": float(src.mean()),
                 "gain_over_source": float(union_nl_nls.mean() - src.mean()),
@@ -174,4 +201,5 @@ def run_metrics(universe_txt: str, source_fail_json: str, nl_fail_json: str, nl_
             },
         },
     }
+
     return out
