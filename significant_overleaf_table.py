@@ -14,17 +14,16 @@ MODEL = "deepseek"
 #     return f"{p:.4g}"
 
 def fmt_p(p: float, alpha: float = 0.05) -> str:
-    # round to 2 decimals; show "<0.01" safely in LaTeX
+    """
+    Format p-values to 2 decimals.
+    Use math-mode < for very small p-values.
+    Highlight significant cells in light gray.
+    """
     if p < 0.005:
-        s = r"\textless 0.01"
+        s = "$<0.01$"
     else:
         s = f"{p:.2f}"
 
-    if p < alpha:
-        return f"\\cellcolor{{gray!20}}{{{s}}}"
-    return s
-
-    # highlight significant cells
     if p < alpha:
         return f"\\cellcolor{{gray!20}}{{{s}}}"
     return s
