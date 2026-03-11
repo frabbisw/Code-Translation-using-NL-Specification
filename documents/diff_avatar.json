@@ -1,0 +1,47 @@
+{
+  "dataset": "avatar",
+  "source_root": "/home/f_rabbi/nlspec/dataset_lit",
+  "filtered_root": "/home/f_rabbi/nlspec/dataset_nlspec",
+  "languages": {
+    "Java": {
+      "source_count": 249,
+      "filtered_count": 240,
+      "common_count": 240,
+      "removed_count": 9,
+      "added_count": 0,
+      "removed": [
+        "atcoder_ABC108_B.java",
+        "atcoder_ABC137_D.java",
+        "atcoder_AGC011_C.java",
+        "atcoder_ARC062_B.java",
+        "atcoder_ARC086_B.java",
+        "codeforces_334_A.java",
+        "codeforces_356_A.java",
+        "codeforces_37_A.java",
+        "codeforces_445_A.java"
+      ],
+      "added": []
+    },
+    "Python": {
+      "source_count": 250,
+      "filtered_count": 239,
+      "common_count": 239,
+      "removed_count": 11,
+      "added_count": 0,
+      "removed": [
+        "atcoder_ABC089_C.py",
+        "atcoder_ABC118_C.py",
+        "atcoder_ABC120_C.py",
+        "atcoder_ABC123_C.py",
+        "atcoder_ABC152_E.py",
+        "atcoder_AGC002_B.py",
+        "atcoder_AGC012_A.py",
+        "atcoder_AGC013_A.py",
+        "atcoder_ARC062_B.py",
+        "atcoder_ARC086_B.py",
+        "codeforces_400_A.py"
+      ],
+      "added": []
+    }
+  }
+}

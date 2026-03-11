@@ -1,0 +1,52 @@
+{
+  "dataset": "codenet",
+  "source_root": "/home/f_rabbi/nlspec/dataset_lit",
+  "filtered_root": "/home/f_rabbi/nlspec/dataset_nlspec",
+  "languages": {
+    "C": {
+      "source_count": 200,
+      "filtered_count": 200,
+      "common_count": 200,
+      "removed_count": 0,
+      "added_count": 0,
+      "removed": [],
+      "added": []
+    },
+    "C++": {
+      "source_count": 200,
+      "filtered_count": 200,
+      "common_count": 200,
+      "removed_count": 0,
+      "added_count": 0,
+      "removed": [],
+      "added": []
+    },
+    "Go": {
+      "source_count": 200,
+      "filtered_count": 200,
+      "common_count": 200,
+      "removed_count": 0,
+      "added_count": 0,
+      "removed": [],
+      "added": []
+    },
+    "Java": {
+      "source_count": 200,
+      "filtered_count": 200,
+      "common_count": 200,
+      "removed_count": 0,
+      "added_count": 0,
+      "removed": [],
+      "added": []
+    },
+    "Python": {
+      "source_count": 200,
+      "filtered_count": 200,
+      "common_count": 200,
+      "removed_count": 0,
+      "added_count": 0,
+      "removed": [],
+      "added": []
+    }
+  }
+}

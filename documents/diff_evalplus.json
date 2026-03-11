@@ -1,0 +1,25 @@
+{
+  "dataset": "evalplus",
+  "source_root": "/home/f_rabbi/nlspec/dataset_lit",
+  "filtered_root": "/home/f_rabbi/nlspec/dataset_nlspec",
+  "languages": {
+    "Python": {
+      "source_count": 164,
+      "filtered_count": 164,
+      "common_count": 164,
+      "removed_count": 0,
+      "added_count": 0,
+      "removed": [],
+      "added": []
+    },
+    "evalplus_java": {
+      "source_count": 0,
+      "filtered_count": 0,
+      "common_count": 0,
+      "removed_count": 0,
+      "added_count": 0,
+      "removed": [],
+      "added": []
+    }
+  }
+}
