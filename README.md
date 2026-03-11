@@ -6,7 +6,7 @@ We have used python3.10 for our whole experiment. install the necessary pip pack
 The Datasets are available [here](https://zenodo.org/records/18793262?token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6ImM4YjBmZDExLWRiMjMtNGI5NS04NmZlLWJkZGM4YTY0NTg2OCIsImRhdGEiOnt9LCJyYW5kb20iOiJiZmVjMzMyYjQ0ODU3YTVjNzExZWRlYTA3ZjU5YTBmMSJ9.gBycvTVO8OcP7B2mRSXeQGOa3227vywXHHml6iQoaS0Li_AdOuMQBCE_bYpICxwxtFDQ8A-vx2xnJvylKngDeg).
 
 #### Exact Diff from Source Dataset
-As we filtered out inconsistent samples, we have shared the exact diff of our data samples from the source dataset in [documents](https://github.com/frabbisw/Code-Translation-using-NL-Specification/tree/main/documents) folder.
+As we filtered out inconsistent samples, we have shared the exact diff of our data samples from the source dataset in [documents](https://github.com/frabbisw/Code-Translation-using-NL-Specification/tree/main/documents/diff) folder.
 
 ## Structure of the database
 
